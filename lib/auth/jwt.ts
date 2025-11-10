@@ -1,4 +1,4 @@
-import { SignJWT, jwtVerify } from 'jose'
+import { SignJWT, jwtVerify, type JWTPayload as JoseJWTPayload } from 'jose'
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || 'your-super-secret-key-change-this-in-production'
@@ -29,7 +29,11 @@ export async function generateToken(payload: JWTPayload): Promise<string> {
 export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET)
-    return payload as JWTPayload
+    return {
+      userId: payload.userId as string,
+      phone: payload.phone as string,
+      role: payload.role as 'admin' | 'student',
+    }
   } catch (error) {
     console.error('JWT 검증 실패:', error)
     return null
