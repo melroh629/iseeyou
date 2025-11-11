@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { generateOTP, sendOTPSMS, cleanPhoneNumber, formatPhoneNumber } from '@/lib/sms/coolsms'
 
+// Send OTP API Route
 // Supabase Admin 클라이언트
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
