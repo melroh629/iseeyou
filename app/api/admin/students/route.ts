@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { cleanPhoneNumber, formatPhoneNumber } from '@/lib/sms/coolsms'
+import crypto from 'crypto'
 
 // Supabase Admin 클라이언트
 const supabaseAdmin = createClient(
@@ -44,9 +45,12 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. users 테이블에 추가
+    const userId = crypto.randomUUID()
+
     const { data: newUser, error: userError } = await supabaseAdmin
       .from('users')
       .insert({
+        id: userId,
         phone: formattedPhone,
         name,
         role: 'student',
