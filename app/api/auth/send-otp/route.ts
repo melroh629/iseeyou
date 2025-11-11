@@ -59,15 +59,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 개발 환경에서는 SMS 발송 스킵
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔐 개발 모드 - OTP:', otp)
+    // SMS 발송 활성화 여부 체크 (환경변수로 제어)
+    const smsEnabled = process.env.ENABLE_SMS === 'true'
+
+    if (!smsEnabled) {
+      console.log('🔐 SMS 비활성화 모드 - OTP:', otp)
       console.log('📱 전화번호:', formattedPhone)
 
       return NextResponse.json({
         success: true,
-        message: '개발 모드: OTP가 콘솔에 출력되었습니다.',
-        dev: { otp }, // 개발 모드에서만 OTP 반환
+        message: 'OTP가 생성되었습니다.',
+        dev: { otp }, // SMS 비활성화 시 OTP 반환
       })
     }
 
