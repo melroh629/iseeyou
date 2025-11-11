@@ -1,16 +1,25 @@
-// Cool SMS v4 SDK 사용
+import crypto from 'crypto'
+
+// Cool SMS v4 SDK 사용 (HMAC 인증)
 const messageService = {
   sendOne: async (params: any) => {
-    const fetch = (await import('node-fetch')).default
-
     const apiKey = process.env.COOLSMS_API_KEY!
     const apiSecret = process.env.COOLSMS_API_SECRET!
+
+    const date = new Date().toISOString()
+    const salt = crypto.randomBytes(32).toString('hex')
+
+    // HMAC 서명 생성
+    const signature = crypto
+      .createHmac('sha256', apiSecret)
+      .update(date + salt)
+      .digest('hex')
 
     const response = await fetch('https://api.solapi.com/messages/v4/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}:${apiSecret}`,
+        'Authorization': `HMAC-SHA256 apiKey=${apiKey}, date=${date}, salt=${salt}, signature=${signature}`,
       },
       body: JSON.stringify({
         message: {
@@ -23,7 +32,8 @@ const messageService = {
 
     if (!response.ok) {
       const error = await response.text()
-      throw new Error(error)
+      console.error('Cool SMS API 에러:', error)
+      throw new Error(`SMS 발송 실패: ${error}`)
     }
 
     return await response.json()
@@ -34,16 +44,23 @@ const messageService = {
  * SMS 발송
  */
 export async function sendSMS(to: string, text: string) {
+  const senderPhone = process.env.COOLSMS_SENDER_PHONE
+
+  if (!senderPhone) {
+    throw new Error('발신번호(COOLSMS_SENDER_PHONE)가 설정되지 않았습니다.')
+  }
+
   try {
     const response = await messageService.sendOne({
       to,
-      from: process.env.COOLSMS_SENDER_PHONE || to, // 발신번호 (등록된 번호 필요)
+      from: senderPhone,
       text,
     })
 
+    console.log('✅ SMS 발송 성공:', { to, from: senderPhone })
     return response
   } catch (error: any) {
-    console.error('SMS 발송 실패:', error)
+    console.error('❌ SMS 발송 실패:', error)
     throw new Error(error.message || 'SMS 발송에 실패했습니다.')
   }
 }
