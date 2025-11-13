@@ -47,7 +47,7 @@ export function AddEnrollmentDialog() {
   const [classTypes, setClassTypes] = useState<ClassType[]>([])
 
   const [formData, setFormData] = useState({
-    studentId: '',
+    studentId: 'none', // 'none' = 템플릿, 실제 ID = 학생에게 할당
     classTypeId: '',
     name: '',
     totalCount: 10,
@@ -85,22 +85,28 @@ export function AddEnrollmentDialog() {
     setError('')
 
     try {
+      // 'none'이면 null로 전송 (템플릿)
+      const submitData = {
+        ...formData,
+        studentId: formData.studentId === 'none' ? null : formData.studentId,
+      }
+
       const response = await fetch('/api/admin/enrollments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || '수강권 발급에 실패했습니다.')
+        throw new Error(data.error || '수강권 생성에 실패했습니다.')
       }
 
       // 성공
       setOpen(false)
       setFormData({
-        studentId: '',
+        studentId: 'none',
         classTypeId: '',
         name: '',
         totalCount: 10,
@@ -121,22 +127,22 @@ export function AddEnrollmentDialog() {
       <DialogTrigger asChild>
         <Button>
           <Ticket className="h-4 w-4 mr-2" />
-          수강권 발급
+          수강권 생성
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>수강권 발급</DialogTitle>
+            <DialogTitle>수강권 생성</DialogTitle>
             <DialogDescription>
-              학생에게 수강권을 발급합니다.
+              수강권 템플릿을 생성하거나 학생에게 직접 발급합니다.
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="student">
-                학생 선택 <span className="text-red-500">*</span>
+                학생 선택 <span className="text-muted-foreground text-xs">(선택사항)</span>
               </Label>
               <Select
                 value={formData.studentId}
@@ -149,6 +155,9 @@ export function AddEnrollmentDialog() {
                   <SelectValue placeholder="학생을 선택하세요" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">
+                    템플릿 (학생 미지정)
+                  </SelectItem>
                   {students.map((student) => (
                     <SelectItem key={student.id} value={student.id}>
                       {student.users.name} ({student.users.phone})
@@ -282,7 +291,11 @@ export function AddEnrollmentDialog() {
               취소
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? '발급 중...' : '발급'}
+              {loading
+                ? '생성 중...'
+                : formData.studentId === 'none'
+                ? '템플릿 생성'
+                : '발급'}
             </Button>
           </DialogFooter>
         </form>

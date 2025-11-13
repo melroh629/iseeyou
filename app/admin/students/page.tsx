@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { User, Phone, Dog } from 'lucide-react'
+import { User, Phone, Dog, Ticket } from 'lucide-react'
 import { AddStudentDialog } from '@/components/admin/add-student-dialog'
+import { AssignTicketDialog } from '@/components/admin/assign-ticket-dialog'
 
 // 캐싱 비활성화 - 항상 최신 데이터 표시
 export const dynamic = 'force-dynamic'
@@ -103,13 +104,16 @@ export default async function StudentsPage() {
                     {student.notes}
                   </p>
                 )}
-                <div className="pt-4 flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1">
-                    수정
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
-                    상세
-                  </Button>
+                <div className="pt-4 flex flex-col gap-2">
+                  <AssignTicketDialog studentId={student.id} studentName={student.users.name} />
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" className="flex-1">
+                      수정
+                    </Button>
+                    <Button variant="outline" size="sm" className="flex-1">
+                      상세
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

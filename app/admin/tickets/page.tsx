@@ -38,7 +38,7 @@ interface Enrollment {
       name: string
       phone: string
     }
-  }
+  } | null // null이면 템플릿
   class_types: {
     name: string
     type: string
@@ -126,6 +126,8 @@ export default async function TicketsPage() {
           <h1 className="text-3xl font-bold">수강권 관리</h1>
           <p className="text-muted-foreground mt-1">
             총 {enrollmentList?.length || 0}개의 수강권
+            (템플릿 {enrollmentList?.filter(e => !e.students).length || 0}개,
+            발급 {enrollmentList?.filter(e => e.students).length || 0}개)
           </p>
         </div>
         <AddEnrollmentDialog />
@@ -147,23 +149,37 @@ export default async function TicketsPage() {
                     <Ticket className="h-5 w-5 text-primary" />
                     {enrollment.class_types.name}
                   </CardTitle>
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
-                      enrollment.status
-                    )}`}
-                  >
-                    {getStatusText(enrollment.status)}
-                  </span>
+                  <div className="flex gap-2">
+                    {!enrollment.students && (
+                      <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                        템플릿
+                      </span>
+                    )}
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
+                        enrollment.status
+                      )}`}
+                    >
+                      {getStatusText(enrollment.status)}
+                    </span>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex items-center gap-2 text-sm">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">{enrollment.students.users.name}</span>
-                  <span className="text-muted-foreground">
-                    {enrollment.students.users.phone}
-                  </span>
-                </div>
+                {enrollment.students ? (
+                  <div className="flex items-center gap-2 text-sm">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">{enrollment.students.users.name}</span>
+                    <span className="text-muted-foreground">
+                      {enrollment.students.users.phone}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <User className="h-4 w-4" />
+                    <span>미할당 (템플릿)</span>
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-muted-foreground">남은 횟수</div>
@@ -204,12 +220,20 @@ export default async function TicketsPage() {
                 )}
 
                 <div className="pt-2 flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1">
-                    수정
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
-                    내역
-                  </Button>
+                  {!enrollment.students ? (
+                    <Button variant="outline" size="sm" className="flex-1">
+                      학생에게 할당
+                    </Button>
+                  ) : (
+                    <>
+                      <Button variant="outline" size="sm" className="flex-1">
+                        수정
+                      </Button>
+                      <Button variant="outline" size="sm" className="flex-1">
+                        내역
+                      </Button>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>

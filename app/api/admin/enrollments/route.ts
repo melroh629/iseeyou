@@ -18,19 +18,19 @@ export async function POST(request: NextRequest) {
     const { studentId, classTypeId, name, totalCount, validFrom, validUntil, price } =
       await request.json()
 
-    // 필수 필드 검증
-    if (!studentId || !classTypeId || !name || !totalCount || !validFrom || !validUntil) {
+    // 필수 필드 검증 (studentId는 선택사항 - null이면 템플릿)
+    if (!classTypeId || !name || !totalCount || !validFrom || !validUntil) {
       return NextResponse.json(
         { error: '필수 항목을 모두 입력해주세요.' },
         { status: 400 }
       )
     }
 
-    // 수강권 발급
+    // 수강권 생성 (템플릿 또는 직접 발급)
     const { data: newEnrollment, error } = await supabaseAdmin
       .from('enrollments')
       .insert({
-        student_id: studentId,
+        student_id: studentId || null, // null이면 템플릿
         class_type_id: classTypeId,
         name,
         total_count: totalCount,
@@ -44,9 +44,9 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error || !newEnrollment) {
-      console.error('수강권 발급 실패:', error)
+      console.error('수강권 생성 실패:', error)
       return NextResponse.json(
-        { error: '수강권 발급에 실패했습니다.' },
+        { error: '수강권 생성에 실패했습니다.' },
         { status: 500 }
       )
     }
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       enrollment: newEnrollment,
     })
   } catch (error: any) {
-    console.error('수강권 발급 에러:', error)
+    console.error('수강권 생성 에러:', error)
     return NextResponse.json(
       { error: error.message || '서버 오류가 발생했습니다.' },
       { status: 500 }
