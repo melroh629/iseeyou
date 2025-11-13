@@ -1,8 +1,22 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { User, Phone, Dog } from 'lucide-react'
 import { AddStudentDialog } from '@/components/admin/add-student-dialog'
+
+// Supabase Admin 클라이언트 (RLS 우회)
+const getAdminClient = () => {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    }
+  )
+}
 
 interface Student {
   id: string
@@ -17,7 +31,7 @@ interface Student {
 }
 
 export default async function StudentsPage() {
-  const supabase = await createClient()
+  const supabase = getAdminClient()
 
   // 수강생 목록 조회 (users 테이블과 JOIN)
   const { data: students, error } = await supabase

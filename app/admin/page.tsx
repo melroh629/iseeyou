@@ -1,11 +1,25 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
 import { getCurrentUserFromServer } from '@/lib/auth/user'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CalendarDays, Users, Ticket } from 'lucide-react'
 
+// Supabase Admin 클라이언트 (RLS 우회)
+const getAdminClient = () => {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    }
+  )
+}
+
 export default async function AdminDashboard() {
   const user = await getCurrentUserFromServer()
-  const supabase = await createClient()
+  const supabase = getAdminClient()
 
   // 통계 데이터 조회
   const [

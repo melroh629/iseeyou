@@ -14,8 +14,9 @@ CREATE TABLE IF NOT EXISTS public.otp_codes (
 CREATE INDEX idx_otp_codes_phone ON public.otp_codes(phone);
 CREATE INDEX idx_otp_codes_expires_at ON public.otp_codes(expires_at);
 
--- RLS 비활성화 (서버에서만 접근)
-ALTER TABLE public.otp_codes DISABLE ROW LEVEL SECURITY;
+-- RLS 활성화 (보안)
+-- Service Role Key로만 접근 가능
+ALTER TABLE public.otp_codes ENABLE ROW LEVEL SECURITY;
 
 -- 만료된 OTP 자동 삭제 함수 (선택사항)
 CREATE OR REPLACE FUNCTION delete_expired_otps()
