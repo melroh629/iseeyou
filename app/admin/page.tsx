@@ -3,6 +3,10 @@ import { getCurrentUserFromServer } from '@/lib/auth/user'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CalendarDays, Users, Ticket } from 'lucide-react'
 
+// 캐싱 비활성화 - 항상 최신 데이터 표시
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 // Supabase Admin 클라이언트 (RLS 우회)
 const getAdminClient = () => {
   return createClient(

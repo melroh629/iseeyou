@@ -4,6 +4,10 @@ import { Button } from '@/components/ui/button'
 import { Ticket, User, Calendar, Clock } from 'lucide-react'
 import { AddEnrollmentDialog } from '@/components/admin/add-enrollment-dialog'
 
+// 캐싱 비활성화 - 항상 최신 데이터 표시
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 // Supabase Admin 클라이언트 (RLS 우회)
 const getAdminClient = () => {
   return createClient(
