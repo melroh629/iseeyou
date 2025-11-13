@@ -15,6 +15,39 @@ const supabaseAdmin = createClient(
   }
 )
 
+// GET: 학생 목록 조회
+export async function GET() {
+  try {
+    const { data: students, error } = await supabaseAdmin
+      .from('students')
+      .select(`
+        id,
+        users (
+          name,
+          phone
+        )
+      `)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('학생 목록 조회 실패:', error)
+      return NextResponse.json(
+        { error: '학생 목록 조회에 실패했습니다.' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ students })
+  } catch (error: any) {
+    console.error('학생 목록 조회 에러:', error)
+    return NextResponse.json(
+      { error: error.message || '서버 오류가 발생했습니다.' },
+      { status: 500 }
+    )
+  }
+}
+
+// POST: 학생 추가
 export async function POST(request: NextRequest) {
   try {
     const { name, phone, dogName, notes } = await request.json()
