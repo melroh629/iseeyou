@@ -115,11 +115,11 @@ export default async function AdminDashboard() {
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           <a
-            href="/admin/classes"
+            href="/admin/schedules"
             className="flex flex-col items-center justify-center p-6 border rounded-lg hover:bg-accent transition-colors"
           >
             <CalendarDays className="h-8 w-8 mb-2 text-primary" />
-            <span className="font-medium">수업 만들기</span>
+            <span className="font-medium">일정 추가</span>
           </a>
           <a
             href="/admin/students"
