@@ -40,21 +40,12 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, description, type, defaultMaxStudents, defaultCancelHours } =
-      await request.json()
+    const { name, description, color, defaultCancelHours } = await request.json()
 
     // 필수 필드 검증
-    if (!name || !type || !defaultCancelHours) {
+    if (!name) {
       return NextResponse.json(
-        { error: '필수 항목을 모두 입력해주세요.' },
-        { status: 400 }
-      )
-    }
-
-    // 그룹 수업일 때 최대 인원 확인
-    if (type === 'group' && (!defaultMaxStudents || defaultMaxStudents < 1)) {
-      return NextResponse.json(
-        { error: '그룹 수업은 기본 최대 인원을 설정해야 합니다.' },
+        { error: '수업 이름을 입력해주세요.' },
         { status: 400 }
       )
     }
@@ -65,9 +56,8 @@ export async function POST(request: NextRequest) {
       .insert({
         name,
         description: description || null,
-        type,
-        default_max_students: type === 'group' ? defaultMaxStudents : null,
-        default_cancel_hours: defaultCancelHours,
+        color: color || null,
+        default_cancel_hours: defaultCancelHours || 24,
       })
       .select()
       .single()
