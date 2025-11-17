@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
       .select(
         `
         *,
-        class_types (
+        classes (
           id,
           name,
           description,

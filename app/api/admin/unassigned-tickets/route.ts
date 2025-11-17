@@ -24,7 +24,7 @@ export async function GET() {
             phone
           )
         ),
-        class_types (
+        classes (
           id,
           name,
           type

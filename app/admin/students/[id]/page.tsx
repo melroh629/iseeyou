@@ -44,7 +44,7 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
       start_date,
       end_date,
       created_at,
-      class_types (
+      classes (
         id,
         name,
         color
@@ -164,9 +164,9 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
                     <CardTitle className="flex items-center gap-2">
                       <div
                         className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: enrollment.class_types.color || '#3b82f6' }}
+                        style={{ backgroundColor: enrollment.classes.color || '#3b82f6' }}
                       />
-                      {enrollment.class_types.name}
+                      {enrollment.classes.name}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
