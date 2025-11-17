@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Clock, Users, Edit, Plus } from "lucide-react";
@@ -10,19 +10,6 @@ import { DeleteClassTypeDialog } from "@/components/admin/delete-class-type-dial
 // 캐싱 비활성화
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-const getAdminClient = () => {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    }
-  );
-};
 
 interface ClassDetail {
   id: string;
@@ -58,7 +45,7 @@ export default async function ClassDetailPage({
 }: {
   params: { id: string };
 }) {
-  const supabase = getAdminClient();
+  const supabase = getSupabaseAdmin();
 
   // 수업 타입 정보 조회
   const { data: classType, error: classTypeError } = await supabase

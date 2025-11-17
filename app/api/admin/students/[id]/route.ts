@@ -1,18 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-
-const getAdminClient = () => {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    }
-  )
-}
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
 
 // 수강생 정보 수정
 export async function PATCH(
@@ -20,8 +7,8 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     const { dogName, notes } = await request.json()
-    const supabaseAdmin = getAdminClient()
 
     const { error } = await supabaseAdmin
       .from('students')

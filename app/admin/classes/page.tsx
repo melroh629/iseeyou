@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
@@ -8,20 +8,6 @@ import { ClassTypeCardActions } from '@/components/admin/class-type-card-actions
 // 캐싱 비활성화 - 항상 최신 데이터 표시
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
-
-// Supabase Admin 클라이언트 (RLS 우회)
-const getAdminClient = () => {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    }
-  )
-}
 
 interface ClassWithTemplate {
   id: string
@@ -39,7 +25,7 @@ interface ClassWithTemplate {
 }
 
 export default async function ClassesPage() {
-  const supabase = getAdminClient()
+  const supabase = getSupabaseAdmin()
 
   // 수업 타입 조회
   const { data: classTypes, error } = await supabase

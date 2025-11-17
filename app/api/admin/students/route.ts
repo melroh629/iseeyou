@@ -1,23 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { cleanPhoneNumber, formatPhoneNumber } from '@/lib/sms/coolsms'
 import crypto from 'crypto'
-
-// Supabase Admin 클라이언트
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  }
-)
 
 // GET: 학생 목록 조회
 export async function GET() {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     const { data: students, error } = await supabaseAdmin
       .from('students')
       .select(`
@@ -50,6 +39,7 @@ export async function GET() {
 // POST: 학생 추가
 export async function POST(request: NextRequest) {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     const { name, phone, dogName, notes } = await request.json()
 
     // 필수 필드 검증

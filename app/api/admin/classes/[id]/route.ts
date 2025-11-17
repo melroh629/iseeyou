@@ -1,21 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-// Supabase Admin 클라이언트
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  }
-)
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
 
 // 개별 일정 수정
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     const { date, startTime, endTime, type, maxStudents, status, notes } = await request.json()
 
     // 필수 필드 검증
@@ -71,6 +60,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 // 개별 일정 삭제
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     // 해당 일정에 예약이 있는지 확인
     const { data: bookings } = await supabaseAdmin
       .from('bookings')

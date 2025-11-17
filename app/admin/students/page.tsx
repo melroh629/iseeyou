@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { User, Phone, Dog, Ticket } from 'lucide-react'
@@ -10,20 +10,6 @@ import { EditStudentDialog } from '@/components/admin/edit-student-dialog'
 // 캐싱 비활성화 - 항상 최신 데이터 표시
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
-
-// Supabase Admin 클라이언트 (RLS 우회)
-const getAdminClient = () => {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    }
-  )
-}
 
 interface Student {
   id: string
@@ -38,7 +24,7 @@ interface Student {
 }
 
 export default async function StudentsPage() {
-  const supabase = getAdminClient()
+  const supabase = getSupabaseAdmin()
 
   // 수강생 목록 조회 (users 테이블과 JOIN)
   const { data: students, error } = await supabase

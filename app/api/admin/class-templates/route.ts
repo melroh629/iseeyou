@@ -1,17 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-// Supabase Admin 클라이언트
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  }
-)
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
 
 // 요일을 숫자로 변환 (일요일=0, 월요일=1, ...)
 const DAY_MAP: { [key: string]: number } = {
@@ -59,6 +47,7 @@ function generateDatesForPattern(
 
 export async function POST(request: NextRequest) {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     const { classTypeId, startDate, endDate, weeklyPattern, type, maxStudents, notes } =
       await request.json()
 
@@ -155,6 +144,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     const { searchParams } = new URL(request.url)
     const classTypeId = searchParams.get('classTypeId')
 

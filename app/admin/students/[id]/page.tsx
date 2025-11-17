@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, User, Phone, Dog, Calendar, Ticket } from 'lucide-react'
@@ -10,21 +10,8 @@ import { AssignTicketDialog } from '@/components/admin/assign-ticket-dialog'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-const getAdminClient = () => {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    }
-  )
-}
-
 export default async function StudentDetailPage({ params }: { params: { id: string } }) {
-  const supabase = getAdminClient()
+  const supabase = getSupabaseAdmin()
 
   // 수강생 정보 조회
   const { data: student, error: studentError } = await supabase

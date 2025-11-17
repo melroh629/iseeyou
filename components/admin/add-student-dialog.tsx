@@ -14,14 +14,10 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Plus } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useFormSubmit } from '@/lib/hooks/use-form-submit'
 
 export function AddStudentDialog() {
   const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const router = useRouter()
-
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -29,33 +25,18 @@ export function AddStudentDialog() {
     notes: '',
   })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-
-    try {
-      const response = await fetch('/api/admin/students', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || '수강생 추가에 실패했습니다.')
-      }
-
-      // 성공
+  const { loading, error, handleSubmit } = useFormSubmit({
+    url: '/api/admin/students',
+    method: 'POST',
+    onSuccess: () => {
       setOpen(false)
       setFormData({ name: '', phone: '', dogName: '', notes: '' })
-      router.refresh() // 페이지 새로고침
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+    },
+  })
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    await handleSubmit(formData)
   }
 
   const formatPhoneNumber = (value: string) => {
@@ -74,7 +55,7 @@ export function AddStudentDialog() {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={onSubmit}>
           <DialogHeader>
             <DialogTitle>새 수강생 등록</DialogTitle>
             <DialogDescription>

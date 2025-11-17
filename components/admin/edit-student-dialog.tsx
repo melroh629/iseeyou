@@ -49,30 +49,30 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
     setError('')
 
     try {
-      // users 테이블 업데이트
-      const userResponse = await fetch(`/api/admin/users/${student.users.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          phone: formData.phone,
+      // users + students 테이블 동시 업데이트
+      const [userResponse, studentResponse] = await Promise.all([
+        fetch(`/api/admin/users/${student.users.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: formData.name,
+            phone: formData.phone,
+          }),
         }),
-      })
+        fetch(`/api/admin/students/${student.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            dogName: formData.dogName,
+            notes: formData.notes,
+          }),
+        }),
+      ])
 
       if (!userResponse.ok) {
         const data = await userResponse.json()
         throw new Error(data.error || '사용자 정보 수정 실패')
       }
-
-      // students 테이블 업데이트
-      const studentResponse = await fetch(`/api/admin/students/${student.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          dogName: formData.dogName,
-          notes: formData.notes,
-        }),
-      })
 
       if (!studentResponse.ok) {
         const data = await studentResponse.json()
@@ -101,7 +101,7 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
           <DialogHeader>
             <DialogTitle>수강생 정보 수정</DialogTitle>
             <DialogDescription>
-              수강생의 정보를 수정합니다.
+              수강생 정보를 수정합니다.
             </DialogDescription>
           </DialogHeader>
 
@@ -115,6 +115,7 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                   setFormData({ ...formData, name: e.target.value })
                 }
                 required
+                disabled={loading}
               />
             </div>
 
@@ -122,12 +123,13 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
               <Label htmlFor="phone">전화번호 *</Label>
               <Input
                 id="phone"
+                type="tel"
                 value={formData.phone}
                 onChange={(e) =>
                   setFormData({ ...formData, phone: e.target.value })
                 }
-                placeholder="010-1234-5678"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -139,7 +141,7 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, dogName: e.target.value })
                 }
-                placeholder="예: 코코"
+                disabled={loading}
               />
             </div>
 
@@ -151,8 +153,8 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, notes: e.target.value })
                 }
-                placeholder="특이사항이나 메모를 입력하세요"
                 rows={3}
+                disabled={loading}
               />
             </div>
 

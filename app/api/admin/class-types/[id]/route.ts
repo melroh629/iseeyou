@@ -1,18 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-
-const getAdminClient = () => {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    }
-  )
-}
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
 
 // 수업 타입 수정
 export async function PATCH(
@@ -20,8 +7,8 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     const { name, description, color, type, defaultCancelHours, defaultMaxStudents } = await request.json()
-    const supabaseAdmin = getAdminClient()
 
     // 수업 타입 업데이트
     const { error } = await supabaseAdmin
@@ -54,7 +41,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabaseAdmin = getAdminClient()
+    const supabaseAdmin = getSupabaseAdmin()
 
     // 1. 해당 수업 타입의 모든 일정 조회
     const { data: classes, error: classesError } = await supabaseAdmin
