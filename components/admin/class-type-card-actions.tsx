@@ -29,13 +29,13 @@ export function ClassTypeCardActions({
       )}
 
       {/* 기존 액션 버튼들 */}
-      <div className="grid grid-cols-3 gap-2">
-        <Link href={`/admin/classes/${classId}`}>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <Link href={`/admin/classes/${classId}`} className="block">
           <Button variant="outline" className="w-full" size="sm">
             상세보기
           </Button>
         </Link>
-        <Link href={`/admin/classes/${classId}/edit`}>
+        <Link href={`/admin/classes/${classId}/edit`} className="block">
           <Button variant="outline" className="w-full" size="sm">
             수정
           </Button>

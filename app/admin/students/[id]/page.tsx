@@ -95,7 +95,7 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
         <CardHeader>
           <CardTitle>기본 정보</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-4">
+        <CardContent className="grid gap-4 sm:grid-cols-2">
           <div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
               <User className="h-4 w-4" />
@@ -129,7 +129,7 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
             </p>
           </div>
           {studentInfo.notes && (
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               <div className="text-sm text-muted-foreground mb-1">메모</div>
               <p className="text-sm">{studentInfo.notes}</p>
             </div>

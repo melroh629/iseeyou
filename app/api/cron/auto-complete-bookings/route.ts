@@ -107,11 +107,52 @@ export async function GET(request: NextRequest) {
 
     console.log(`[Auto Complete] 완료 처리할 예약: ${allExpiredBookings.length}건`)
 
+    // 4-1. 수업 상태도 자동으로 완료 처리할 목록 조회
+    const { data: pastSchedules, error: pastSchedulesError } = await supabase
+      .from('schedules')
+      .select('id')
+      .eq('status', 'scheduled')
+      .lt('date', currentDate)
+
+    if (pastSchedulesError) {
+      throw new Error(`과거 일정 조회 실패: ${pastSchedulesError.message}`)
+    }
+
+    const { data: todayPastSchedules, error: todayPastSchedulesError } = await supabase
+      .from('schedules')
+      .select('id')
+      .eq('status', 'scheduled')
+      .eq('date', currentDate)
+      .lt('end_time', currentTime)
+
+    if (todayPastSchedulesError) {
+      throw new Error(`오늘 일정 조회 실패: ${todayPastSchedulesError.message}`)
+    }
+
+    const scheduleIdsToComplete = [
+      ...(pastSchedules?.map((s) => s.id) || []),
+      ...(todayPastSchedules?.map((s) => s.id) || [])
+    ]
+
+    if (scheduleIdsToComplete.length > 0) {
+      const { error: scheduleUpdateError } = await supabase
+        .from('schedules')
+        .update({ status: 'completed' })
+        .in('id', scheduleIdsToComplete)
+
+      if (scheduleUpdateError) {
+        throw new Error(`일정 상태 업데이트 실패: ${scheduleUpdateError.message}`)
+      }
+
+      console.log(`[Auto Complete] 완료 처리된 일정: ${scheduleIdsToComplete.length}건`)
+    }
+
     if (allExpiredBookings.length === 0) {
       return NextResponse.json({
         success: true,
         message: '완료 처리할 예약이 없습니다.',
         completed: 0,
+        updatedSchedules: scheduleIdsToComplete.length,
         timestamp: kstNow.toISOString()
       })
     }
@@ -195,6 +236,7 @@ export async function GET(request: NextRequest) {
       message: `${successCount}건 완료, ${failCount}건 실패`,
       completed: successCount,
       failed: failCount,
+      updatedSchedules: scheduleIdsToComplete.length,
       timestamp: kstNow.toISOString(),
       results
     })

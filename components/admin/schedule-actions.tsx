@@ -20,7 +20,7 @@ export function ScheduleActions({ schedule }: ScheduleActionsProps) {
   const scheduleInfo = `${schedule.date} ${schedule.start_time.substring(0, 5)}~${schedule.end_time.substring(0, 5)}`
 
   return (
-    <div className="flex gap-2">
+    <div className="flex flex-wrap gap-2 justify-end sm:flex-nowrap">
       <EditClassScheduleDialog schedule={schedule} />
       <DeleteClassScheduleDialog scheduleId={schedule.id} scheduleInfo={scheduleInfo} />
     </div>

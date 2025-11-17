@@ -95,7 +95,7 @@ export function BasicScheduleMode({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <Label>반복 요일 선택 *</Label>
         {selectedDays.length > 0 && (
           <Button type="button" variant="outline" size="sm" onClick={copyToAllDays}>
@@ -104,7 +104,7 @@ export function BasicScheduleMode({
           </Button>
         )}
       </div>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {DAYS.map((day) => (
           <Button
             key={day.key}
@@ -128,7 +128,7 @@ export function BasicScheduleMode({
 
             return (
               <div key={dayKey} className="space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <span className="font-medium">{day?.label}요일</span>
                   <Button
                     type="button"

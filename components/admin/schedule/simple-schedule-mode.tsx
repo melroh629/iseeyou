@@ -120,26 +120,28 @@ export function SimpleScheduleMode({
       {/* 수업 기간 */}
       <div>
         <Label className="text-base font-semibold mb-3 block">수업 기간</Label>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
           <Input
             type="date"
             value={startDate}
             onChange={(e) => onStartDateChange(e.target.value)}
             required
+            className="w-full"
           />
-          <span className="text-muted-foreground">~</span>
+          <span className="text-muted-foreground text-center">~</span>
           <Input
             type="date"
             value={endDate}
             onChange={(e) => onEndDateChange(e.target.value)}
             required
+            className="w-full"
           />
         </div>
       </div>
 
       {/* 요일 선택 */}
       <div>
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-6">
           {DAYS.map((day) => (
             <Button
               key={day.key}
@@ -164,38 +166,42 @@ export function SimpleScheduleMode({
                 <Label className="text-sm font-medium">{day?.label}요일</Label>
 
                 {timeSlots.map((slot, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 flex-1">
+                  <div key={index} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                    <div className="flex flex-col gap-2 w-full sm:flex-row sm:items-center sm:gap-2 sm:flex-1">
                       <Input
                         type="time"
                         value={slot.start_time}
                         onChange={(e) => updateTimeSlot(dayKey, index, 'start_time', e.target.value)}
                         required
+                        className="w-full"
                       />
-                      <span className="text-muted-foreground">~</span>
+                      <span className="text-muted-foreground text-center">~</span>
                       <Input
                         type="time"
                         value={slot.end_time}
                         onChange={(e) => updateTimeSlot(dayKey, index, 'end_time', e.target.value)}
                         required
+                        className="w-full"
                       />
                     </div>
 
                     {/* 50분, 삭제 버튼 */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col gap-2 w-full sm:w-auto sm:flex-row sm:items-center">
                       <Button
                         type="button"
                         variant="secondary"
                         size="sm"
-                        className="px-4"
+                        className="w-full sm:w-auto"
                       >
                         50분
                       </Button>
                       <Button
                         type="button"
                         variant="ghost"
-                        size="icon"
+                        size="sm"
                         onClick={() => removeTimeSlot(dayKey, index)}
+                        className="w-full sm:w-auto"
+                        aria-label="시간 삭제"
                       >
                         <Minus className="h-4 w-4" />
                       </Button>

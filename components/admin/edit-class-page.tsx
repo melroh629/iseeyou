@@ -43,7 +43,7 @@ export function EditClassPage({ classType, schedules }: EditClassPageProps) {
   return (
     <div className="space-y-6">
       {/* 헤더 */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <Link href={`/admin/classes/${classType.id}`}>
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-4 w-4" />
@@ -91,7 +91,7 @@ export function EditClassPage({ classType, schedules }: EditClassPageProps) {
                 {schedules.map((schedule) => (
                   <Card key={schedule.id}>
                     <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="space-y-1">
                           <div className="flex items-center gap-3">
                             <span className="font-medium">

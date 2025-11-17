@@ -131,9 +131,9 @@ export default function NewClassPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 px-4 sm:px-0">
       {/* 헤더 */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <Link href="/admin/classes">
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-4 w-4" />
@@ -185,7 +185,7 @@ export default function NewClassPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* 모드 선택 */}
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <Button
                 type="button"
                 variant={scheduleMode === 'basic' ? 'default' : 'outline'}
@@ -228,13 +228,13 @@ export default function NewClassPage() {
         </Card>
 
         {/* 저장 버튼 */}
-        <div className="flex gap-2 justify-end">
+        <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
           <Link href="/admin/classes">
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" className="w-full sm:w-auto">
               취소
             </Button>
           </Link>
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" disabled={loading} className="w-full sm:w-auto">
             {loading ? '생성 중...' : '수업 생성'}
           </Button>
         </div>

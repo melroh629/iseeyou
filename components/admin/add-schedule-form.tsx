@@ -121,7 +121,7 @@ export function AddScheduleForm({ classType }: AddScheduleFormProps) {
   return (
     <div className="max-w-4xl mx-auto space-y-6 px-4 sm:px-6">
       {/* 헤더 */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <Link href={`/admin/classes/${classType.id}`}>
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-4 w-4" />
@@ -181,7 +181,7 @@ export function AddScheduleForm({ classType }: AddScheduleFormProps) {
                   </Popover>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="simpleStartTime">시작 시간 *</Label>
                     <Input

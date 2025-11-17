@@ -130,7 +130,7 @@ export function EditClassScheduleDialog({ schedule, onSuccess }: EditClassSchedu
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="startTime">시작 시간 *</Label>
               <Input
@@ -153,7 +153,7 @@ export function EditClassScheduleDialog({ schedule, onSuccess }: EditClassSchedu
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="type">수업 형태 *</Label>
               <Select value={type} onValueChange={(v: any) => setType(v)}>
@@ -206,11 +206,11 @@ export function EditClassScheduleDialog({ schedule, onSuccess }: EditClassSchedu
             />
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+          <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="w-full sm:w-auto">
               취소
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading} className="w-full sm:w-auto">
               {loading ? '저장 중...' : '저장'}
             </Button>
           </DialogFooter>

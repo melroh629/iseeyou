@@ -73,7 +73,7 @@ export function AdvancedScheduleMode({
       </div>
 
       {/* 간단한 날짜 그리드 */}
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
         {calendarDates.map((dateStr) => {
           const date = new Date(dateStr)
           const isSelected = specificDates.some((d) => d.date === dateStr)
@@ -105,7 +105,7 @@ export function AdvancedScheduleMode({
               const date = new Date(dateObj.date)
               return (
                 <div key={dateObj.date} className="space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <span className="font-medium">
                       {date.toLocaleDateString('ko-KR', {
                         month: 'long',

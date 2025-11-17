@@ -49,15 +49,17 @@ export default async function StudentsPage() {
   const studentList = students as unknown as Student[]
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 px-4 sm:px-0">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold">수강생 관리</h1>
           <p className="text-muted-foreground mt-1">
             총 {studentList?.length || 0}명의 수강생
           </p>
         </div>
-        <AddStudentDialog />
+        <div className="w-full sm:w-auto">
+          <AddStudentDialog />
+        </div>
       </div>
 
       {!studentList || studentList.length === 0 ? (
@@ -67,7 +69,7 @@ export default async function StudentsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {studentList.map((student) => (
             <Card key={student.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>

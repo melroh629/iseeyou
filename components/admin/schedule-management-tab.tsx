@@ -1,135 +1,142 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { DateRangePicker } from '@/components/ui/date-range-picker'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { SpecificDate } from '@/lib/types/schedule'
-import { AdvancedScheduleMode } from '@/components/admin/schedule/advanced-schedule-mode'
-import { SimpleScheduleMode } from '@/components/admin/schedule/simple-schedule-mode'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SpecificDate } from "@/lib/types/schedule";
+import { AdvancedScheduleMode } from "@/components/admin/schedule/advanced-schedule-mode";
+import { SimpleScheduleMode } from "@/components/admin/schedule/simple-schedule-mode";
 
 interface ScheduleManagementTabProps {
   classType: {
-    id: string
-    name: string
-    type: string | null
-    default_max_students: number
-  }
+    id: string;
+    name: string;
+    type: string | null;
+    default_max_students: number;
+  };
 }
 
-export function ScheduleManagementTab({ classType }: ScheduleManagementTabProps) {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [mode, setMode] = useState<'simple' | 'advanced'>('simple')
+export function ScheduleManagementTab({
+  classType,
+}: ScheduleManagementTabProps) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<"simple" | "advanced">("simple");
 
   // 간단 모드 상태 (스튜디오메이트 스타일)
-  const [simpleStartDate, setSimpleStartDate] = useState('')
-  const [simpleEndDate, setSimpleEndDate] = useState('')
+  const [simpleStartDate, setSimpleStartDate] = useState("");
+  const [simpleEndDate, setSimpleEndDate] = useState("");
   const [weeklySchedule, setWeeklySchedule] = useState<{
-    [key: string]: Array<{ start_time: string; end_time: string }>
-  }>({})
+    [key: string]: Array<{ start_time: string; end_time: string }>;
+  }>({});
 
   // 고급 모드 상태
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
-  const [specificDates, setSpecificDates] = useState<SpecificDate[]>([])
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [specificDates, setSpecificDates] = useState<SpecificDate[]>([]);
 
   // 공통 상태
-  const [maxStudents, setMaxStudents] = useState(classType.default_max_students || 6)
-  const [notes, setNotes] = useState('')
+  const [maxStudents, setMaxStudents] = useState(
+    classType.default_max_students || 6
+  );
+  const [notes, setNotes] = useState("");
 
-  const type = classType.type || 'group'
+  const type = classType.type || "group";
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
 
     try {
-      if (mode === 'simple') {
+      if (mode === "simple") {
         // 간단 모드: 요일 기반 반복 일정 생성
         if (!simpleStartDate || !simpleEndDate) {
-          alert('수업 기간을 입력해주세요.')
-          setLoading(false)
-          return
+          alert("수업 기간을 입력해주세요.");
+          setLoading(false);
+          return;
         }
 
         if (Object.keys(weeklySchedule).length === 0) {
-          alert('최소 하나의 요일과 시간을 설정해주세요.')
-          setLoading(false)
-          return
+          alert("최소 하나의 요일과 시간을 설정해주세요.");
+          setLoading(false);
+          return;
         }
 
-        const response = await fetch('/api/admin/recurring-schedules', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const response = await fetch("/api/admin/recurring-schedules", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             classId: classType.id,
             startDate: simpleStartDate,
             endDate: simpleEndDate,
             weeklyPattern: weeklySchedule,
             type: type,
-            maxStudents: type === 'group' ? maxStudents : null,
+            maxStudents: type === "group" ? maxStudents : null,
             notes: notes || null,
           }),
-        })
+        });
 
-        const data = await response.json()
+        const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || '일정 추가에 실패했습니다.')
+          throw new Error(data.error || "일정 추가에 실패했습니다.");
         }
 
-        alert(`${data.summary.totalClasses}개의 일정이 추가되었습니다.`)
+        alert(`${data.summary.totalClasses}개의 일정이 추가되었습니다.`);
       } else {
         // 고급 모드: 다중 일정 생성
         if (specificDates.length === 0) {
-          alert('최소 하나의 일정을 선택해주세요.')
-          return
+          alert("최소 하나의 일정을 선택해주세요.");
+          return;
         }
 
-        const response = await fetch('/api/admin/recurring-schedules/advanced', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            classId: classType.id,
-            specificDates,
-            type: type,
-            maxStudents: type === 'group' ? maxStudents : null,
-            notes: notes || null,
-          }),
-        })
+        const response = await fetch(
+          "/api/admin/recurring-schedules/advanced",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              classId: classType.id,
+              specificDates,
+              type: type,
+              maxStudents: type === "group" ? maxStudents : null,
+              notes: notes || null,
+            }),
+          }
+        );
 
-        const data = await response.json()
+        const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || '일정 추가에 실패했습니다.')
+          throw new Error(data.error || "일정 추가에 실패했습니다.");
         }
 
-        alert(`${data.summary.totalClasses}개의 일정이 추가되었습니다.`)
+        alert(`${data.summary.totalClasses}개의 일정이 추가되었습니다.`);
       }
 
       // 폼 초기화
-      setSimpleStartDate('')
-      setSimpleEndDate('')
-      setWeeklySchedule({})
-      setStartDate('')
-      setEndDate('')
-      setSpecificDates([])
-      setNotes('')
+      setSimpleStartDate("");
+      setSimpleEndDate("");
+      setWeeklySchedule({});
+      setStartDate("");
+      setEndDate("");
+      setSpecificDates([]);
+      setNotes("");
 
       // 페이지 새로고침
-      router.refresh()
+      router.refresh();
     } catch (error: any) {
-      alert(error.message)
+      alert(error.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -139,7 +146,10 @@ export function ScheduleManagementTab({ classType }: ScheduleManagementTabProps)
           <CardTitle>일정 추가 방식</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs value={mode} onValueChange={(v) => setMode(v as 'simple' | 'advanced')}>
+          <Tabs
+            value={mode}
+            onValueChange={(v) => setMode(v as "simple" | "advanced")}
+          >
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="simple">간단 모드</TabsTrigger>
               <TabsTrigger value="advanced">고급 모드</TabsTrigger>
@@ -177,7 +187,7 @@ export function ScheduleManagementTab({ classType }: ScheduleManagementTabProps)
                     endDate={endDate}
                     onStartChange={setStartDate}
                     onEndChange={setEndDate}
-                    required={mode === 'advanced'}
+                    required={mode === "advanced"}
                   />
                 </CardContent>
               </Card>
@@ -206,7 +216,7 @@ export function ScheduleManagementTab({ classType }: ScheduleManagementTabProps)
           <CardTitle>수업 설정</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {type === 'group' && (
+          {type === "group" && (
             <div className="space-y-2">
               <Label htmlFor="maxStudents">최대 인원 *</Label>
               <Input
@@ -234,11 +244,11 @@ export function ScheduleManagementTab({ classType }: ScheduleManagementTabProps)
       </Card>
 
       {/* 제출 버튼 */}
-      <div className="flex justify-end">
-        <Button type="submit" disabled={loading}>
-          {loading ? '추가 중...' : '일정 추가'}
+      <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+        <Button type="submit" disabled={loading} className="w-full sm:w-auto">
+          {loading ? "추가 중..." : "일정 추가"}
         </Button>
       </div>
     </form>
-  )
+  );
 }

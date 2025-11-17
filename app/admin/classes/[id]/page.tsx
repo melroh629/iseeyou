@@ -5,6 +5,8 @@ import { ArrowLeft, Calendar, Clock, Users, Edit } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DeleteClassTypeDialog } from "@/components/admin/delete-class-type-dialog";
+import { ScheduleStatusBadge } from "@/components/schedule-status-badge";
+import { getScheduleDisplayStatus } from "@/lib/constants/schedule-status";
 
 // 캐싱 비활성화
 export const dynamic = "force-dynamic";
@@ -137,7 +139,9 @@ export default async function ClassDetailPage({
                 style={{ backgroundColor: classDetail.color }}
               />
             )}
-            <h1 className="text-2xl sm:text-3xl font-bold">{classDetail.name}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">
+              {classDetail.name}
+            </h1>
           </div>
           {classDetail.description && (
             <p className="text-muted-foreground mt-1 text-sm sm:text-base">
@@ -146,7 +150,10 @@ export default async function ClassDetailPage({
           )}
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <Link href={`/admin/classes/${params.id}/edit`} className="w-full sm:w-auto">
+          <Link
+            href={`/admin/classes/${params.id}/edit`}
+            className="w-full sm:w-auto"
+          >
             <Button className="w-full">
               <Edit className="mr-2 h-4 w-4" />
               수업 관리
@@ -178,7 +185,17 @@ export default async function ClassDetailPage({
           <div>
             <p className="text-sm text-muted-foreground">상태</p>
             <p className="text-2xl font-bold">
-              {classList.filter((s) => s.status === "scheduled").length}개 예정
+              {
+                classList.filter((s) => {
+                  const displayStatus = getScheduleDisplayStatus(
+                    s.status,
+                    s.date,
+                    s.end_time
+                  );
+                  return displayStatus === "scheduled";
+                }).length
+              }
+              개 예정
             </p>
           </div>
         </CardContent>
@@ -186,7 +203,7 @@ export default async function ClassDetailPage({
 
       {/* 일정 목록 */}
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-2xl font-bold">일정 목록</h2>
           <p className="text-sm text-muted-foreground">
             총 {Object.keys(groupedSchedules).length}일
@@ -205,8 +222,7 @@ export default async function ClassDetailPage({
               const dateObj = new Date(date);
               return (
                 <div key={date}>
-                  {/* 스티키 날짜 헤더 - Material Design 스타일 */}
-                  <div className="sticky top-0 z-10 pb-3 mb-2">
+                  <div className="pb-3 mb-2">
                     <div className="flex items-center gap-2 pt-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <h3 className="text-base font-medium text-muted-foreground">
@@ -235,7 +251,7 @@ export default async function ClassDetailPage({
                           {/* 시간 & 정보 */}
                           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
                             {/* 시간 */}
-                            <div className="flex items-center gap-2 min-w-[140px]">
+                            <div className="flex items-center gap-2 sm:min-w-[140px]">
                               <Clock className="h-4 w-4 text-muted-foreground" />
                               <span className="font-semibold text-sm sm:text-base">
                                 {schedule.start_time.substring(0, 5)} ~{" "}
@@ -251,9 +267,7 @@ export default async function ClassDetailPage({
                                   : "bg-purple-50 text-purple-700"
                               }`}
                             >
-                              {schedule.type === "group"
-                                ? "그룹"
-                                : "프라이빗"}
+                              {schedule.type === "group" ? "그룹" : "프라이빗"}
                             </span>
 
                             {/* 예약 인원 */}
@@ -262,28 +276,17 @@ export default async function ClassDetailPage({
                               <div className="flex items-center gap-2 text-sm">
                                 <Users className="h-4 w-4 text-muted-foreground" />
                                 <span className="font-medium">
-                                  {confirmedBookings} /{" "}
-                                  {schedule.max_students}
+                                  {confirmedBookings} / {schedule.max_students}
                                 </span>
                               </div>
                             ) : null}
 
                             {/* 상태 */}
-                            <span
-                              className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full ${
-                                schedule.status === "scheduled"
-                                  ? "bg-green-50 text-green-700"
-                                  : schedule.status === "cancelled"
-                                  ? "bg-red-50 text-red-700"
-                                  : "bg-gray-50 text-gray-700"
-                              }`}
-                            >
-                              {schedule.status === "scheduled"
-                                ? "예정"
-                                : schedule.status === "cancelled"
-                                ? "취소"
-                                : "완료"}
-                            </span>
+                            <ScheduleStatusBadge
+                              dbStatus={schedule.status}
+                              date={schedule.date}
+                              endTime={schedule.end_time}
+                            />
 
                             {/* 메모 */}
                             {schedule.notes && (

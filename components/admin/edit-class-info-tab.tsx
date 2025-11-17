@@ -115,7 +115,7 @@ export function EditClassInfoTab({ classType }: EditClassInfoTabProps) {
           {/* 색상 */}
           <div className="space-y-2">
             <Label>색상</Label>
-            <div className="grid grid-cols-8 gap-2">
+            <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
               {PRESET_COLORS.map((presetColor) => (
                 <button
                   key={presetColor}
@@ -178,8 +178,8 @@ export function EditClassInfoTab({ classType }: EditClassInfoTabProps) {
           </div>
 
           {/* 버튼 */}
-          <div className="flex gap-2 justify-end">
-            <Button type="submit" disabled={loading}>
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <Button type="submit" disabled={loading} className="w-full sm:w-auto">
               {loading ? '저장 중...' : '저장'}
             </Button>
           </div>

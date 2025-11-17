@@ -26,21 +26,21 @@ export function TimeSlotInput({
   showRemove = true,
 }: TimeSlotInputProps) {
   return (
-    <div className="flex gap-2 items-center">
+    <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
       <Input
         type="time"
         value={startTime}
         onChange={(e) => onStartChange(e.target.value)}
-        className="w-36"
+        className="flex-1 min-w-[120px] sm:w-36"
         required={required}
         disabled={disabled}
       />
-      <span>~</span>
+      <span className="text-muted-foreground">~</span>
       <Input
         type="time"
         value={endTime}
         onChange={(e) => onEndChange(e.target.value)}
-        className="w-36"
+        className="flex-1 min-w-[120px] sm:w-36"
         required={required}
         disabled={disabled}
       />
@@ -51,6 +51,7 @@ export function TimeSlotInput({
           size="sm"
           onClick={onRemove}
           disabled={disabled}
+          className="w-full sm:w-auto"
         >
           <X className="h-4 w-4" />
         </Button>

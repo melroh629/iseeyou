@@ -207,7 +207,7 @@ export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}
               </TabsContent>
 
               <TabsContent value="students" className="mt-4 space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <Label>학생 선택</Label>
                   <button
                     type="button"
@@ -300,7 +300,7 @@ export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="totalCount">
                   총 횟수 <span className="text-red-500">*</span>
@@ -333,7 +333,7 @@ export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="validFrom">
                   시작일 <span className="text-red-500">*</span>
@@ -374,16 +374,17 @@ export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}
             )}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-end">
             <Button
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
               disabled={loading}
+              className="w-full sm:w-auto"
             >
               취소
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading} className="w-full sm:w-auto">
               {loading
                 ? '처리 중...'
                 : isUnassigned
