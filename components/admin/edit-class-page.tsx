@@ -3,7 +3,6 @@
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EditClassInfoTab } from '@/components/admin/edit-class-info-tab'
 import { ScheduleManagementTab } from '@/components/admin/schedule-management-tab'
 
@@ -37,21 +36,17 @@ export function EditClassPage({ classType }: EditClassPageProps) {
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="info" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="info">수업 정보</TabsTrigger>
-          <TabsTrigger value="schedule">일정 관리</TabsTrigger>
-        </TabsList>
+      {/* 수업 정보 섹션 */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">수업 정보</h2>
+        <EditClassInfoTab classType={classType} />
+      </div>
 
-        <TabsContent value="info" className="mt-6">
-          <EditClassInfoTab classType={classType} />
-        </TabsContent>
-
-        <TabsContent value="schedule" className="mt-6">
-          <ScheduleManagementTab classType={classType} />
-        </TabsContent>
-      </Tabs>
+      {/* 일정 관리 섹션 */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">일정 추가</h2>
+        <ScheduleManagementTab classType={classType} />
+      </div>
     </div>
   )
 }
