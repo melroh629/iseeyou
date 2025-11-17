@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Clock, Users, Edit } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ScheduleActions } from "@/components/admin/schedule-actions";
 import { DeleteClassTypeDialog } from "@/components/admin/delete-class-type-dialog";
 
 // 캐싱 비활성화
@@ -231,72 +230,67 @@ export default async function ClassDetailPage({
                       return (
                         <div
                           key={schedule.id}
-                          className="bg-card rounded-lg shadow-sm hover:shadow-md transition-shadow p-4"
+                          className="bg-card rounded-lg shadow-sm p-4"
                         >
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                            {/* 왼쪽: 시간 & 정보 */}
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
-                              {/* 시간 */}
-                              <div className="flex items-center gap-2 min-w-[140px]">
-                                <Clock className="h-4 w-4 text-muted-foreground" />
-                                <span className="font-semibold text-sm sm:text-base">
-                                  {schedule.start_time.substring(0, 5)} ~{" "}
-                                  {schedule.end_time.substring(0, 5)}
-                                </span>
-                              </div>
-
-                              {/* 타입 */}
-                              <span
-                                className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full ${
-                                  schedule.type === "group"
-                                    ? "bg-blue-50 text-blue-700"
-                                    : "bg-purple-50 text-purple-700"
-                                }`}
-                              >
-                                {schedule.type === "group"
-                                  ? "그룹"
-                                  : "프라이빗"}
+                          {/* 시간 & 정보 */}
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+                            {/* 시간 */}
+                            <div className="flex items-center gap-2 min-w-[140px]">
+                              <Clock className="h-4 w-4 text-muted-foreground" />
+                              <span className="font-semibold text-sm sm:text-base">
+                                {schedule.start_time.substring(0, 5)} ~{" "}
+                                {schedule.end_time.substring(0, 5)}
                               </span>
-
-                              {/* 예약 인원 */}
-                              {schedule.type === "group" &&
-                              schedule.max_students ? (
-                                <div className="flex items-center gap-2 text-sm">
-                                  <Users className="h-4 w-4 text-muted-foreground" />
-                                  <span className="font-medium">
-                                    {confirmedBookings} /{" "}
-                                    {schedule.max_students}
-                                  </span>
-                                </div>
-                              ) : null}
-
-                              {/* 상태 */}
-                              <span
-                                className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full ${
-                                  schedule.status === "scheduled"
-                                    ? "bg-green-50 text-green-700"
-                                    : schedule.status === "cancelled"
-                                    ? "bg-red-50 text-red-700"
-                                    : "bg-gray-50 text-gray-700"
-                                }`}
-                              >
-                                {schedule.status === "scheduled"
-                                  ? "예정"
-                                  : schedule.status === "cancelled"
-                                  ? "취소"
-                                  : "완료"}
-                              </span>
-
-                              {/* 메모 */}
-                              {schedule.notes && (
-                                <p className="text-sm text-muted-foreground">
-                                  {schedule.notes}
-                                </p>
-                              )}
                             </div>
 
-                            {/* 오른쪽: 액션 */}
-                            <ScheduleActions schedule={schedule} />
+                            {/* 타입 */}
+                            <span
+                              className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full ${
+                                schedule.type === "group"
+                                  ? "bg-blue-50 text-blue-700"
+                                  : "bg-purple-50 text-purple-700"
+                              }`}
+                            >
+                              {schedule.type === "group"
+                                ? "그룹"
+                                : "프라이빗"}
+                            </span>
+
+                            {/* 예약 인원 */}
+                            {schedule.type === "group" &&
+                            schedule.max_students ? (
+                              <div className="flex items-center gap-2 text-sm">
+                                <Users className="h-4 w-4 text-muted-foreground" />
+                                <span className="font-medium">
+                                  {confirmedBookings} /{" "}
+                                  {schedule.max_students}
+                                </span>
+                              </div>
+                            ) : null}
+
+                            {/* 상태 */}
+                            <span
+                              className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full ${
+                                schedule.status === "scheduled"
+                                  ? "bg-green-50 text-green-700"
+                                  : schedule.status === "cancelled"
+                                  ? "bg-red-50 text-red-700"
+                                  : "bg-gray-50 text-gray-700"
+                              }`}
+                            >
+                              {schedule.status === "scheduled"
+                                ? "예정"
+                                : schedule.status === "cancelled"
+                                ? "취소"
+                                : "완료"}
+                            </span>
+
+                            {/* 메모 */}
+                            {schedule.notes && (
+                              <p className="text-sm text-muted-foreground">
+                                {schedule.notes}
+                              </p>
+                            )}
                           </div>
                         </div>
                       );

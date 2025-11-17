@@ -20,9 +20,27 @@ export default async function EditClassTypePage({ params }: { params: { id: stri
     notFound()
   }
 
+  // 해당 수업의 모든 일정 조회
+  const { data: schedules } = await supabase
+    .from('schedules')
+    .select(`
+      id,
+      date,
+      start_time,
+      end_time,
+      type,
+      max_students,
+      status,
+      notes,
+      recurring_schedule_id
+    `)
+    .eq('class_id', params.id)
+    .order('date', { ascending: true })
+    .order('start_time', { ascending: true })
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6">
-      <EditClassPage classType={classType} />
+      <EditClassPage classType={classType} schedules={schedules || []} />
     </div>
   )
 }

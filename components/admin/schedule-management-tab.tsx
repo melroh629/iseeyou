@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -44,48 +44,6 @@ export function ScheduleManagementTab({ classType }: ScheduleManagementTabProps)
   const [notes, setNotes] = useState('')
 
   const type = classType.type || 'group'
-
-  // 기존 일정 조회
-  const [existingSchedules, setExistingSchedules] = useState<any[]>([])
-  const [loadingSchedules, setLoadingSchedules] = useState(true)
-
-  useEffect(() => {
-    fetchSchedules()
-  }, [classType.id])
-
-  const fetchSchedules = async () => {
-    try {
-      const response = await fetch(`/api/admin/schedules?classId=${classType.id}`)
-      const data = await response.json()
-      setExistingSchedules(data.schedules || [])
-    } catch (error) {
-      console.error('일정 조회 실패:', error)
-    } finally {
-      setLoadingSchedules(false)
-    }
-  }
-
-  const handleDeleteSchedule = async (scheduleId: string) => {
-    if (!confirm('이 일정을 삭제하시겠습니까?')) return
-
-    try {
-      const response = await fetch('/api/admin/schedules', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: scheduleId }),
-      })
-
-      if (!response.ok) {
-        throw new Error('일정 삭제에 실패했습니다.')
-      }
-
-      alert('일정이 삭제되었습니다.')
-      fetchSchedules()
-      router.refresh()
-    } catch (error: any) {
-      alert(error.message)
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -164,8 +122,7 @@ export function ScheduleManagementTab({ classType }: ScheduleManagementTabProps)
       setSpecificDates([])
       setNotes('')
 
-      // 일정 목록 새로고침
-      fetchSchedules()
+      // 페이지 새로고침
       router.refresh()
     } catch (error: any) {
       alert(error.message)
@@ -175,61 +132,7 @@ export function ScheduleManagementTab({ classType }: ScheduleManagementTabProps)
   }
 
   return (
-    <div className="space-y-8">
-      {/* 등록된 일정 목록 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>등록된 일정</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loadingSchedules ? (
-            <p className="text-sm text-muted-foreground text-center py-4">로딩 중...</p>
-          ) : existingSchedules.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              등록된 일정이 없습니다.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {existingSchedules.map((schedule) => (
-                <div
-                  key={schedule.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
-                >
-                  <div className="flex items-center gap-4">
-                    <span className="font-medium">{schedule.date}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {schedule.start_time.substring(0, 5)} ~ {schedule.end_time.substring(0, 5)}
-                    </span>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      schedule.type === 'group'
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'bg-purple-50 text-purple-700'
-                    }`}>
-                      {schedule.type === 'group' ? '그룹' : '프라이빗'}
-                    </span>
-                    {schedule.type === 'group' && schedule.max_students && (
-                      <span className="text-xs text-muted-foreground">
-                        최대 {schedule.max_students}명
-                      </span>
-                    )}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteSchedule(schedule.id)}
-                  >
-                    삭제
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* 새 일정 추가 */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* 모드 선택 */}
       <Card>
         <CardHeader>
@@ -336,7 +239,6 @@ export function ScheduleManagementTab({ classType }: ScheduleManagementTabProps)
           {loading ? '추가 중...' : '일정 추가'}
         </Button>
       </div>
-      </form>
-    </div>
+    </form>
   )
 }
