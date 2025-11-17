@@ -29,7 +29,7 @@ interface UnassignedTicket {
   valid_from: string;
   valid_until: string;
   price: number | null;
-  class_types: {
+  classes: {
     name: string;
     type: string;
   };
@@ -151,7 +151,7 @@ export function AssignTicketDialog({
                       <SelectItem key={ticket.id} value={ticket.id}>
                         <div className="flex flex-col">
                           <span className="font-medium">
-                            {ticket.class_types.name} - {ticket.name}
+                            {ticket.classes.name} - {ticket.name}
                           </span>
                           <span className="text-xs text-muted-foreground">
                             {ticket.total_count}회권 |{" "}

@@ -1,0 +1,27 @@
+name: Auto Complete Bookings
+
+# 매 시간 정각에 실행 (KST 기준)
+on:
+  schedule:
+    # UTC 기준이므로 KST-9시간 = 매 시간 정각 (UTC)
+    # 예: KST 10:00 = UTC 01:00
+    - cron: '0 * * * *'  # 매 시간 0분에 실행
+
+  # 수동 실행도 가능
+  workflow_dispatch:
+
+jobs:
+  auto-complete:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call Auto Complete API
+        run: |
+          curl -X GET "${{ secrets.VERCEL_DEPLOYMENT_URL }}/api/cron/auto-complete-bookings" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -w "\nHTTP Status: %{http_code}\n" \
+            -s -S -f || echo "API call failed"
+
+      - name: Log execution time
+        run: echo "Executed at $(TZ='Asia/Seoul' date '+%Y-%m-%d %H:%M:%S %Z')"

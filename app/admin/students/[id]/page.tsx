@@ -1,10 +1,11 @@
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, User, Phone, Dog, Calendar, Ticket } from 'lucide-react'
+import { ArrowLeft, User, Phone, Dog, Calendar, Ticket, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { AssignTicketDialog } from '@/components/admin/assign-ticket-dialog'
+import { DeleteEnrollmentButton } from '@/components/admin/delete-enrollment-button'
 
 // 캐싱 비활성화
 export const dynamic = 'force-dynamic'
@@ -39,10 +40,10 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
     .from('enrollments')
     .select(`
       id,
-      total_sessions,
-      used_sessions,
-      start_date,
-      end_date,
+      total_count,
+      used_count,
+      valid_from,
+      valid_until,
       created_at,
       classes (
         id,
@@ -152,22 +153,25 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {enrollmentList.map((enrollment) => {
-              const dDay = getDDay(enrollment.end_date)
-              const remainingSessions = enrollment.total_sessions - enrollment.used_sessions
+              const dDay = getDDay(enrollment.valid_until)
+              const remainingSessions = enrollment.total_count - enrollment.used_count
               const usagePercent = Math.round(
-                (enrollment.used_sessions / enrollment.total_sessions) * 100
+                (enrollment.used_count / enrollment.total_count) * 100
               )
 
               return (
                 <Card key={enrollment.id} className="hover:shadow-md transition-shadow">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: enrollment.classes.color || '#3b82f6' }}
-                      />
-                      {enrollment.classes.name}
-                    </CardTitle>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: enrollment.classes.color || '#3b82f6' }}
+                        />
+                        {enrollment.classes.name}
+                      </CardTitle>
+                      <DeleteEnrollmentButton enrollmentId={enrollment.id} />
+                    </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {/* 진행도 */}
@@ -175,7 +179,7 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
                       <div className="flex justify-between text-sm mb-1">
                         <span className="text-muted-foreground">사용 현황</span>
                         <span className="font-medium">
-                          {enrollment.used_sessions} / {enrollment.total_sessions}회
+                          {enrollment.used_count} / {enrollment.total_count}회
                         </span>
                       </div>
                       <div className="w-full bg-muted rounded-full h-2">
@@ -189,7 +193,7 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
                     {/* 기간 */}
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">수강 기간</span>
-                      <span>{enrollment.start_date} ~ {enrollment.end_date}</span>
+                      <span>{enrollment.valid_from} ~ {enrollment.valid_until}</span>
                     </div>
 
                     {/* D-Day */}

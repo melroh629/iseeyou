@@ -42,7 +42,7 @@ interface Enrollment {
       phone: string
     }
   } | null
-  class_types: {
+  classes: {
     id: string
     name: string
     type: string
@@ -290,7 +290,7 @@ export default function TicketsPage() {
                   <div className="flex items-start justify-between">
                     <CardTitle className="flex items-center gap-2">
                       <Ticket className="h-5 w-5 text-primary" />
-                      {enrollment.class_types.name}
+                      {enrollment.classes.name}
                     </CardTitle>
                     <div className="flex gap-2">
                       {!enrollment.students && (

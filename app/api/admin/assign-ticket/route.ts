@@ -4,10 +4,11 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin'
 export async function POST(request: NextRequest) {
   try {
     const supabaseAdmin = getSupabaseAdmin()
-    const { templateId, studentId } = await request.json()
+    const { ticketId, templateId, studentId } = await request.json()
+    const enrollmentId = ticketId || templateId
 
     // 필수 필드 검증
-    if (!templateId || !studentId) {
+    if (!enrollmentId || !studentId) {
       return NextResponse.json(
         { error: '수강권과 학생을 선택해주세요.' },
         { status: 400 }
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
     const { data: template, error: fetchError } = await supabaseAdmin
       .from('enrollments')
       .select('*')
-      .eq('id', templateId)
+      .eq('id', enrollmentId)
       .is('student_id', null)
       .single()
 
@@ -28,6 +29,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: '수강권을 찾을 수 없습니다.' },
         { status: 404 }
+      )
+    }
+
+    // 1-1. 중복 체크: 같은 학생에게 같은 수업의 활성 수강권이 있는지 확인
+    const { data: existingEnrollments } = await supabaseAdmin
+      .from('enrollments')
+      .select('id')
+      .eq('student_id', studentId)
+      .eq('class_id', template.class_id)
+      .eq('status', 'active')
+
+    if (existingEnrollments && existingEnrollments.length > 0) {
+      return NextResponse.json(
+        { error: '이미 이 수업의 활성 수강권을 보유하고 있습니다.' },
+        { status: 400 }
       )
     }
 
