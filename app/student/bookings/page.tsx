@@ -1,4 +1,4 @@
-export default function ReservationsPage() {
+export default function BookingsPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">수업 예약</h1>

@@ -47,10 +47,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 2. 미할당 수강권을 복사하여 학생에게 할당
+    // 2. 미할당 수강권을 복사하여 학생에게 할당 (모든 확장 필드 포함)
     const { data: newEnrollment, error: createError } = await supabaseAdmin
       .from('enrollments')
       .insert({
+        // 기본 필드
         student_id: studentId,
         class_id: template.class_id,
         name: template.name,
@@ -60,6 +61,17 @@ export async function POST(request: NextRequest) {
         valid_until: template.valid_until,
         price: template.price,
         status: 'active',
+        // 확장 필드 (템플릿에서 복사)
+        ticket_type: template.ticket_type,
+        color: template.color,
+        max_students_per_class: template.max_students_per_class,
+        weekly_limit: template.weekly_limit,
+        monthly_limit: template.monthly_limit,
+        auto_deduct_weekly: template.auto_deduct_weekly,
+        auto_deduct_monthly: template.auto_deduct_monthly,
+        class_category: template.class_category,
+        notice_message: template.notice_message,
+        booking_available_hours: template.booking_available_hours,
       })
       .select()
       .single()

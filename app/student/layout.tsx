@@ -14,7 +14,7 @@ export default function StudentLayout({
           </Link>
           <div className="ml-auto flex gap-4">
             <Link
-              href="/student/reservations"
+              href="/student/bookings"
               className="text-sm font-medium hover:underline"
             >
               수업 예약

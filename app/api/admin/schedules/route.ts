@@ -88,22 +88,22 @@ export async function POST(request: NextRequest) {
 
     // 프라이빗 수업이고 학생이 선택된 경우, 자동으로 예약 생성
     if (type === 'private' && studentId) {
-      // 해당 학생의 활성 수강권 조회 (같은 class_id)
+      // 해당 학생의 활성 수강권 조회 (같은 class_id, 남은 횟수 있는 것만)
       const { data: enrollments } = await supabaseAdmin
         .from('enrollments')
-        .select('id')
+        .select('id, remaining_count, total_count, used_count')
         .eq('student_id', studentId)
         .eq('class_id', classId)
         .eq('status', 'active')
-        .gt('total_count', 0) // 남은 횟수가 있는지 확인 (used_count < total_count)
+        .gt('remaining_count', 0) // 남은 횟수가 있는지 확인
         .limit(1)
 
       if (enrollments && enrollments.length > 0) {
         const enrollmentId = enrollments[0].id
 
         // 예약 생성
-        await supabaseAdmin.from('reservations').insert({
-          class_id: newClass.id,
+        await supabaseAdmin.from('bookings').insert({
+          schedule_id: newClass.id,
           student_id: studentId,
           enrollment_id: enrollmentId,
           status: 'confirmed',

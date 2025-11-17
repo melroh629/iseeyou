@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { generateOTP, sendOTPSMS, cleanPhoneNumber, formatPhoneNumber } from '@/lib/sms/coolsms'
+import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rate-limit'
 
 // Send OTP API Route
 // Supabase Admin 클라이언트
@@ -17,6 +18,24 @@ const supabaseAdmin = createClient(
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting 체크 (IP 기반)
+    const clientIp = getClientIp(request.headers)
+    const rateLimitResult = checkRateLimit(
+      `otp-send:${clientIp}`,
+      RATE_LIMITS.OTP_SEND
+    )
+
+    if (!rateLimitResult.allowed) {
+      const resetIn = Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000 / 60)
+      return NextResponse.json(
+        {
+          error: `너무 많은 요청입니다. ${resetIn}분 후에 다시 시도해주세요.`,
+          retryAfter: resetIn,
+        },
+        { status: 429 }
+      )
+    }
+
     const { phoneNumber } = await request.json()
 
     if (!phoneNumber) {
@@ -28,6 +47,21 @@ export async function POST(request: NextRequest) {
 
     const cleanPhone = cleanPhoneNumber(phoneNumber)
     const formattedPhone = formatPhoneNumber(cleanPhone)
+
+    // 재발송 제한 체크 (동일 번호당 1분에 1회)
+    const resendLimit = checkRateLimit(
+      `otp-resend:${formattedPhone}`,
+      RATE_LIMITS.OTP_RESEND
+    )
+
+    if (!resendLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: '인증번호를 이미 발송했습니다. 1분 후에 다시 시도해주세요.',
+        },
+        { status: 429 }
+      )
+    }
 
     // OTP 생성
     const otp = generateOTP()

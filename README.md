@@ -24,7 +24,7 @@ iseeyou/
 │   │   ├── students/    # 수강생 관리
 │   │   └── tickets/     # 수강권 관리
 │   └── student/         # 수강생 페이지
-│       ├── reservations/  # 수업 예약
+│       ├── bookings/      # 수업 예약
 │       ├── my-tickets/    # 내 수강권
 │       └── my-classes/    # 내 수업
 ├── components/          # 재사용 가능한 컴포넌트

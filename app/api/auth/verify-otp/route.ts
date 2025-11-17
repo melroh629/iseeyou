@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { cleanPhoneNumber, formatPhoneNumber } from '@/lib/sms/coolsms'
 import { generateToken } from '@/lib/auth/jwt'
+import { checkRateLimit, getClientIp, RATE_LIMITS } from '@/lib/rate-limit'
 
 // Supabase Admin 클라이언트
 const supabaseAdmin = createClient(
@@ -17,6 +18,22 @@ const supabaseAdmin = createClient(
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting 체크 (IP 기반)
+    const clientIp = getClientIp(request.headers)
+    const rateLimitResult = checkRateLimit(
+      `otp-verify:${clientIp}`,
+      RATE_LIMITS.OTP_VERIFY
+    )
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        {
+          error: '너무 많은 시도입니다. 잠시 후 다시 시도해주세요.',
+        },
+        { status: 429 }
+      )
+    }
+
     const { phoneNumber, otp } = await request.json()
 
     if (!phoneNumber || !otp) {
@@ -74,46 +91,41 @@ export async function POST(request: NextRequest) {
       .single()
 
     let userId: string
+    let userRole: string
 
     if (existingUser) {
       // 기존 사용자
       userId = existingUser.id
+      userRole = existingUser.role
     } else {
-      // 신규 사용자 - Supabase Auth에 생성
-      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-        phone: `+82${cleanPhone.slice(1)}`, // +821012345678 형식
-        phone_confirm: true,
-        user_metadata: {
+      // 신규 사용자 - users 테이블에 생성
+      const { data: newUser, error: createError } = await supabaseAdmin
+        .from('users')
+        .insert({
           phone: formattedPhone,
-        },
-      })
+          name: '사용자', // 나중에 수정 가능
+          role: 'student', // 기본은 수강생
+        })
+        .select()
+        .single()
 
-      if (authError || !authData.user) {
-        console.error('사용자 생성 실패:', authError)
+      if (createError || !newUser) {
+        console.error('사용자 생성 실패:', createError)
         return NextResponse.json(
           { error: '사용자 생성에 실패했습니다.' },
           { status: 500 }
         )
       }
 
-      userId = authData.user.id
-
-      // users 테이블에도 생성 (임시 이름)
-      await supabaseAdmin
-        .from('users')
-        .insert({
-          id: userId,
-          phone: formattedPhone,
-          name: '사용자', // 나중에 수정 가능
-          role: 'student', // 기본은 수강생
-        })
+      userId = newUser.id
+      userRole = 'student'
     }
 
     // JWT 토큰 생성
     const token = await generateToken({
       userId,
       phone: formattedPhone,
-      role: existingUser?.role || 'student',
+      role: userRole,
     })
 
     // OTP 삭제
@@ -126,7 +138,7 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       success: true,
       userId,
-      role: existingUser?.role || 'student',
+      role: userRole,
       message: '인증이 완료되었습니다.',
     })
 
