@@ -44,45 +44,33 @@ export default async function ClassesPage() {
   // 수업 타입 조회
   const { data: classTypes, error } = await supabase
     .from('class_types')
-    .select('id, name, description, color')
+    .select('id, name, description, color, type')
     .order('created_at', { ascending: false })
 
   if (error) {
     console.error('수업 조회 실패:', error)
   }
 
-  // 각 수업의 일정 개수 조회
-  const classTypesWithCounts = await Promise.all(
-    (classTypes || []).map(async (ct: any) => {
-      const { count } = await supabase
-        .from('classes')
-        .select('*', { count: 'exact', head: true })
-        .eq('class_type_id', ct.id)
+  // 모든 일정 조회 (한 번에)
+  const { data: allClasses } = await supabase
+    .from('classes')
+    .select('id, class_type_id, date, type, max_students')
+    .order('date', { ascending: true })
 
-      const { data: firstSchedule } = await supabase
-        .from('classes')
-        .select('date, type, max_students')
-        .eq('class_type_id', ct.id)
-        .order('date', { ascending: true })
-        .limit(1)
-        .single()
+  // 각 수업의 일정 정보 계산
+  const classTypesWithCounts = (classTypes || []).map((ct: any) => {
+    const schedules = (allClasses || []).filter((c: any) => c.class_type_id === ct.id)
+    const scheduleCount = schedules.length
+    const firstSchedule = schedules[0] || null
+    const lastSchedule = schedules[scheduleCount - 1] || null
 
-      const { data: lastSchedule } = await supabase
-        .from('classes')
-        .select('date')
-        .eq('class_type_id', ct.id)
-        .order('date', { ascending: false })
-        .limit(1)
-        .single()
-
-      return {
-        ...ct,
-        scheduleCount: count || 0,
-        firstSchedule,
-        lastSchedule,
-      }
-    })
-  )
+    return {
+      ...ct,
+      scheduleCount,
+      firstSchedule,
+      lastSchedule,
+    }
+  })
 
   const classList = classTypesWithCounts
 
@@ -158,7 +146,7 @@ export default async function ClassesPage() {
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">형태:</span>
                         <span>
-                          {classType.firstSchedule.type === 'group' ? '그룹' : '프라이빗'}
+                          {classType.type === 'group' ? '그룹' : classType.type === 'private' ? '프라이빗' : '미정'}
                         </span>
                       </div>
                       {classType.firstSchedule.type === 'group' &&
@@ -176,6 +164,7 @@ export default async function ClassesPage() {
                   <ClassTypeCardActions
                     classTypeId={classType.id}
                     classTypeName={classType.name}
+                    hasSchedules={hasSchedules}
                   />
                 </CardContent>
               </Card>

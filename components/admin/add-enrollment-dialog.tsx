@@ -20,6 +20,8 @@ import {
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Ticket } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
@@ -37,7 +39,11 @@ interface ClassType {
   type: string
 }
 
-export function AddEnrollmentDialog() {
+interface AddEnrollmentDialogProps {
+  onSuccess?: () => void
+}
+
+export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -46,8 +52,10 @@ export function AddEnrollmentDialog() {
   const [students, setStudents] = useState<Student[]>([])
   const [classTypes, setClassTypes] = useState<ClassType[]>([])
 
+  const [isTemplate, setIsTemplate] = useState(true) // true = 템플릿, false = 직접 발급
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([])
+
   const [formData, setFormData] = useState({
-    studentId: 'none', // 'none' = 템플릿, 실제 ID = 학생에게 할당
     classTypeId: '',
     name: '',
     totalCount: 10,
@@ -85,28 +93,54 @@ export function AddEnrollmentDialog() {
     setError('')
 
     try {
-      // 'none'이면 null로 전송 (템플릿)
-      const submitData = {
-        ...formData,
-        studentId: formData.studentId === 'none' ? null : formData.studentId,
+      if (!isTemplate && selectedStudents.length === 0) {
+        throw new Error('최소 한 명의 학생을 선택해주세요.')
       }
 
-      const response = await fetch('/api/admin/enrollments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(submitData),
-      })
+      // 미할당 모드 or 직접 발급 모드
+      if (isTemplate) {
+        // 미할당 수강권 생성
+        const response = await fetch('/api/admin/enrollments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...formData,
+            studentId: null,
+          }),
+        })
 
-      const data = await response.json()
+        const data = await response.json()
+        if (!response.ok) {
+          throw new Error(data.error || '수강권 생성에 실패했습니다.')
+        }
+      } else {
+        // 여러 학생에게 일괄 발급
+        const promises = selectedStudents.map((studentId) =>
+          fetch('/api/admin/enrollments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ...formData,
+              studentId,
+            }),
+          })
+        )
 
-      if (!response.ok) {
-        throw new Error(data.error || '수강권 생성에 실패했습니다.')
+        const results = await Promise.all(promises)
+        const failed = results.filter((r) => !r.ok)
+
+        if (failed.length > 0) {
+          throw new Error(`${failed.length}명의 학생에게 발급 실패했습니다.`)
+        }
+
+        alert(`${selectedStudents.length}명에게 수강권이 발급되었습니다.`)
       }
 
       // 성공
       setOpen(false)
+      setIsTemplate(true)
+      setSelectedStudents([])
       setFormData({
-        studentId: 'none',
         classTypeId: '',
         name: '',
         totalCount: 10,
@@ -115,10 +149,27 @@ export function AddEnrollmentDialog() {
         price: 0,
       })
       router.refresh()
+      if (onSuccess) onSuccess()
     } catch (err: any) {
       setError(err.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const toggleStudent = (studentId: string) => {
+    setSelectedStudents((prev) =>
+      prev.includes(studentId)
+        ? prev.filter((id) => id !== studentId)
+        : [...prev, studentId]
+    )
+  }
+
+  const toggleAllStudents = () => {
+    if (selectedStudents.length === students.length) {
+      setSelectedStudents([])
+    } else {
+      setSelectedStudents(students.map((s) => s.id))
     }
   }
 
@@ -135,37 +186,79 @@ export function AddEnrollmentDialog() {
           <DialogHeader>
             <DialogTitle>수강권 생성</DialogTitle>
             <DialogDescription>
-              수강권 템플릿을 생성하거나 학생에게 직접 발급합니다.
+              미할당 수강권을 생성하거나 학생에게 직접 발급합니다.
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="student">
-                학생 선택 <span className="text-muted-foreground text-xs">(선택사항)</span>
-              </Label>
-              <Select
-                value={formData.studentId}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, studentId: value })
-                }
-                disabled={loading}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="학생을 선택하세요" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">
-                    템플릿 (학생 미지정)
-                  </SelectItem>
-                  {students.map((student) => (
-                    <SelectItem key={student.id} value={student.id}>
-                      {student.users.name} ({student.users.phone})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Tabs
+              value={isTemplate ? 'template' : 'students'}
+              onValueChange={(v) => setIsTemplate(v === 'template')}
+            >
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="template">미할당으로 생성</TabsTrigger>
+                <TabsTrigger value="students">학생에게 발급</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="template" className="mt-4">
+                <p className="text-sm text-muted-foreground mb-4">
+                  미할당으로 생성 후 나중에 학생에게 할당할 수 있습니다.
+                </p>
+              </TabsContent>
+
+              <TabsContent value="students" className="mt-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>학생 선택</Label>
+                  <button
+                    type="button"
+                    onClick={toggleAllStudents}
+                    className="text-sm text-primary hover:underline"
+                    disabled={loading}
+                  >
+                    {selectedStudents.length === students.length ? '전체 해제' : '전체 선택'}
+                  </button>
+                </div>
+
+                <div className="border rounded-md max-h-[200px] overflow-y-auto">
+                  {students.length === 0 ? (
+                    <p className="p-4 text-sm text-muted-foreground text-center">
+                      등록된 학생이 없습니다
+                    </p>
+                  ) : (
+                    <div className="divide-y">
+                      {students.map((student) => (
+                        <div
+                          key={student.id}
+                          className="flex items-center gap-3 p-3 hover:bg-accent transition-colors"
+                        >
+                          <Checkbox
+                            id={student.id}
+                            checked={selectedStudents.includes(student.id)}
+                            onCheckedChange={() => toggleStudent(student.id)}
+                            disabled={loading}
+                          />
+                          <label
+                            htmlFor={student.id}
+                            className="flex-1 cursor-pointer text-sm"
+                          >
+                            <div className="font-medium">{student.users.name}</div>
+                            <div className="text-muted-foreground text-xs">
+                              {student.users.phone}
+                            </div>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {selectedStudents.length > 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    {selectedStudents.length}명 선택됨
+                  </p>
+                )}
+              </TabsContent>
+            </Tabs>
 
             <div className="grid gap-2">
               <Label htmlFor="classType">
@@ -292,10 +385,10 @@ export function AddEnrollmentDialog() {
             </Button>
             <Button type="submit" disabled={loading}>
               {loading
-                ? '생성 중...'
-                : formData.studentId === 'none'
-                ? '템플릿 생성'
-                : '발급'}
+                ? '처리 중...'
+                : isTemplate
+                ? '수강권 생성'
+                : `${selectedStudents.length}명에게 발급`}
             </Button>
           </DialogFooter>
         </form>

@@ -15,36 +15,45 @@ const supabaseAdmin = createClient(
 
 export async function GET() {
   try {
-    // 템플릿 조회 (student_id가 null인 enrollments)
+    // 모든 수강권 조회 (미할당 + 할당된 수강권)
     const { data: templates, error } = await supabaseAdmin
       .from('enrollments')
       .select(`
         id,
         name,
         total_count,
+        used_count,
         valid_from,
         valid_until,
         price,
+        status,
+        created_at,
+        students (
+          id,
+          users (
+            name,
+            phone
+          )
+        ),
         class_types (
+          id,
           name,
           type
         )
       `)
-      .is('student_id', null)
-      .eq('status', 'active')
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('템플릿 조회 실패:', error)
+      console.error('수강권 조회 실패:', error)
       return NextResponse.json(
-        { error: '템플릿 조회에 실패했습니다.' },
+        { error: '수강권 조회에 실패했습니다.' },
         { status: 500 }
       )
     }
 
     return NextResponse.json({ templates })
   } catch (error: any) {
-    console.error('템플릿 조회 에러:', error)
+    console.error('수강권 조회 에러:', error)
     return NextResponse.json(
       { error: error.message || '서버 오류가 발생했습니다.' },
       { status: 500 }

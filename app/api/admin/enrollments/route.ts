@@ -15,8 +15,27 @@ const supabaseAdmin = createClient(
 
 export async function POST(request: NextRequest) {
   try {
-    const { studentId, classTypeId, name, totalCount, validFrom, validUntil, price } =
-      await request.json()
+    const {
+      studentId,
+      classTypeId,
+      name,
+      totalCount,
+      validFrom,
+      validUntil,
+      price,
+      // 새로운 필드들
+      ticketType,
+      color,
+      maxStudentsPerClass,
+      weeklyLimit,
+      monthlyLimit,
+      autoDeductWeekly,
+      autoDeductMonthly,
+      classCategory,
+      noticeMessage,
+      bookingStartHoursBefore,
+      bookingEndHoursBefore,
+    } = await request.json()
 
     // 필수 필드 검증 (studentId는 선택사항 - null이면 템플릿)
     if (!classTypeId || !name || !totalCount || !validFrom || !validUntil) {
@@ -26,11 +45,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 수강권 생성 (템플릿 또는 직접 발급)
+    // 예약 가능 시간 JSON 구성
+    const bookingAvailableHours = {
+      start_hours_before: bookingStartHoursBefore || 168,
+      end_hours_before: bookingEndHoursBefore || 2,
+    }
+
+    // 수강권 생성 (미할당 또는 직접 발급)
     const { data: newEnrollment, error } = await supabaseAdmin
       .from('enrollments')
       .insert({
-        student_id: studentId || null, // null이면 템플릿
+        student_id: studentId || null, // null이면 미할당
         class_type_id: classTypeId,
         name,
         total_count: totalCount,
@@ -39,6 +64,17 @@ export async function POST(request: NextRequest) {
         valid_until: validUntil,
         price: price || null,
         status: 'active',
+        // 새로운 필드들
+        ticket_type: ticketType || 'count_based',
+        color: color || null,
+        max_students_per_class: maxStudentsPerClass || null,
+        weekly_limit: weeklyLimit || null,
+        monthly_limit: monthlyLimit || null,
+        auto_deduct_weekly: autoDeductWeekly || false,
+        auto_deduct_monthly: autoDeductMonthly || false,
+        class_category: classCategory || null,
+        notice_message: noticeMessage || null,
+        booking_available_hours: bookingAvailableHours,
       })
       .select()
       .single()

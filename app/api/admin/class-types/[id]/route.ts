@@ -20,7 +20,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { name, description, color, defaultCancelHours } = await request.json()
+    const { name, description, color, type, defaultCancelHours, defaultMaxStudents } = await request.json()
     const supabaseAdmin = getAdminClient()
 
     // 수업 타입 업데이트
@@ -30,7 +30,9 @@ export async function PATCH(
         name,
         description: description || null,
         color: color || null,
+        type: type || null,
         default_cancel_hours: defaultCancelHours || 24,
+        default_max_students: defaultMaxStudents || null,
       })
       .eq('id', params.id)
 

@@ -20,13 +20,13 @@ export async function POST(request: NextRequest) {
     // 필수 필드 검증
     if (!templateId || !studentId) {
       return NextResponse.json(
-        { error: '템플릿과 학생을 선택해주세요.' },
+        { error: '수강권과 학생을 선택해주세요.' },
         { status: 400 }
       )
     }
 
-    // 템플릿 복사 (원본은 유지하고 새로운 수강권 생성)
-    // 1. 템플릿 정보 조회
+    // 미할당 수강권 복사 (원본은 유지하고 새로운 수강권 생성)
+    // 1. 미할당 수강권 정보 조회
     const { data: template, error: fetchError } = await supabaseAdmin
       .from('enrollments')
       .select('*')
@@ -35,14 +35,14 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (fetchError || !template) {
-      console.error('템플릿 조회 실패:', fetchError)
+      console.error('수강권 조회 실패:', fetchError)
       return NextResponse.json(
-        { error: '템플릿을 찾을 수 없습니다.' },
+        { error: '수강권을 찾을 수 없습니다.' },
         { status: 404 }
       )
     }
 
-    // 2. 템플릿을 복사하여 학생에게 할당
+    // 2. 미할당 수강권을 복사하여 학생에게 할당
     const { data: newEnrollment, error: createError } = await supabaseAdmin
       .from('enrollments')
       .insert({

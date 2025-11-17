@@ -1,16 +1,16 @@
-'use client'
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { LogoutButton } from "@/components/admin/logout-button"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { LogoutButton } from "@/components/admin/logout-button";
 
 export default function AdminLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const pathname = usePathname()
-  const isLoginPage = pathname === '/admin/login'
+  const pathname = usePathname();
+  const isLoginPage = pathname === "/admin/login";
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -26,12 +26,6 @@ export default function AdminLayout({
                 className="text-sm font-medium hover:text-primary transition-colors"
               >
                 수업 관리
-              </Link>
-              <Link
-                href="/admin/schedules"
-                className="text-sm font-medium hover:text-primary transition-colors"
-              >
-                일정 관리
               </Link>
               <Link
                 href="/admin/students"
@@ -51,7 +45,9 @@ export default function AdminLayout({
           </div>
         </nav>
       )}
-      <main className={isLoginPage ? "" : "container mx-auto p-6"}>{children}</main>
+      <main className={isLoginPage ? "" : "container mx-auto p-6"}>
+        {children}
+      </main>
     </div>
-  )
+  );
 }

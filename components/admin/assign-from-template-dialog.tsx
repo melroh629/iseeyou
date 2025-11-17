@@ -19,52 +19,48 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
-import { Ticket } from 'lucide-react'
+import { UserPlus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
-interface TicketTemplate {
+interface Student {
   id: string
-  name: string
-  total_count: number
-  valid_from: string
-  valid_until: string
-  price: number | null
-  class_types: {
+  users: {
     name: string
-    type: string
+    phone: string
   }
 }
 
-interface AssignTicketDialogProps {
-  studentId: string
-  studentName: string
+interface AssignFromTemplateDialogProps {
+  templateId: string
+  templateName: string
 }
 
-export function AssignTicketDialog({ studentId, studentName }: AssignTicketDialogProps) {
+export function AssignFromTemplateDialog({
+  templateId,
+  templateName
+}: AssignFromTemplateDialogProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
 
-  const [templates, setTemplates] = useState<TicketTemplate[]>([])
-  const [selectedTemplateId, setSelectedTemplateId] = useState('')
+  const [students, setStudents] = useState<Student[]>([])
+  const [selectedStudentId, setSelectedStudentId] = useState('')
 
-  // 템플릿 목록 불러오기
+  // 학생 목록 불러오기
   useEffect(() => {
     if (open) {
-      fetchTemplates()
+      fetchStudents()
     }
   }, [open])
 
-  const fetchTemplates = async () => {
+  const fetchStudents = async () => {
     try {
-      const response = await fetch('/api/admin/ticket-templates')
+      const response = await fetch('/api/admin/students')
       const data = await response.json()
-      // 템플릿만 필터링 (student_id가 null인 것)
-      const templatesOnly = (data.templates || []).filter((t: any) => !t.students)
-      setTemplates(templatesOnly)
+      setStudents(data.students || [])
     } catch (err) {
-      console.error('템플릿 조회 실패:', err)
+      console.error('학생 조회 실패:', err)
     }
   }
 
@@ -73,8 +69,8 @@ export function AssignTicketDialog({ studentId, studentName }: AssignTicketDialo
     setLoading(true)
     setError('')
 
-    if (!selectedTemplateId) {
-      setError('수강권 템플릿을 선택해주세요.')
+    if (!selectedStudentId) {
+      setError('학생을 선택해주세요.')
       setLoading(false)
       return
     }
@@ -84,8 +80,8 @@ export function AssignTicketDialog({ studentId, studentName }: AssignTicketDialo
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          templateId: selectedTemplateId,
-          studentId,
+          templateId,
+          studentId: selectedStudentId,
         }),
       })
 
@@ -97,7 +93,7 @@ export function AssignTicketDialog({ studentId, studentName }: AssignTicketDialo
 
       // 성공
       setOpen(false)
-      setSelectedTemplateId('')
+      setSelectedStudentId('')
       router.refresh()
     } catch (err: any) {
       setError(err.message)
@@ -109,9 +105,9 @@ export function AssignTicketDialog({ studentId, studentName }: AssignTicketDialo
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="w-full">
-          <Ticket className="h-4 w-4 mr-2" />
-          수강권 할당
+        <Button variant="outline" size="sm" className="flex-1">
+          <UserPlus className="h-4 w-4 mr-1" />
+          학생에게 할당
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
@@ -119,40 +115,37 @@ export function AssignTicketDialog({ studentId, studentName }: AssignTicketDialo
           <DialogHeader>
             <DialogTitle>수강권 할당</DialogTitle>
             <DialogDescription>
-              {studentName}님에게 수강권을 할당합니다.
+              {templateName} 템플릿을 학생에게 할당합니다.
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="template">
-                수강권 템플릿 <span className="text-red-500">*</span>
+              <Label htmlFor="student">
+                학생 선택 <span className="text-red-500">*</span>
               </Label>
               <Select
-                value={selectedTemplateId}
-                onValueChange={setSelectedTemplateId}
+                value={selectedStudentId}
+                onValueChange={setSelectedStudentId}
                 disabled={loading}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="템플릿을 선택하세요" />
+                  <SelectValue placeholder="학생을 선택하세요" />
                 </SelectTrigger>
                 <SelectContent>
-                  {templates.length === 0 ? (
+                  {students.length === 0 ? (
                     <div className="p-4 text-center text-sm text-muted-foreground">
-                      사용 가능한 템플릿이 없습니다
+                      등록된 학생이 없습니다
                     </div>
                   ) : (
-                    templates.map((template) => (
-                      <SelectItem key={template.id} value={template.id}>
+                    students.map((student) => (
+                      <SelectItem key={student.id} value={student.id}>
                         <div className="flex flex-col">
                           <span className="font-medium">
-                            {template.class_types.name} - {template.name}
+                            {student.users.name}
                           </span>
                           <span className="text-xs text-muted-foreground">
-                            {template.total_count}회권 |{' '}
-                            {template.price ? `${template.price.toLocaleString()}원` : '무료'} |{' '}
-                            {new Date(template.valid_from).toLocaleDateString('ko-KR')} ~{' '}
-                            {new Date(template.valid_until).toLocaleDateString('ko-KR')}
+                            {student.users.phone}
                           </span>
                         </div>
                       </SelectItem>

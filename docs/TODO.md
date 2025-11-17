@@ -111,6 +111,11 @@
 - [ ] 수강권 수정 기능
 - [ ] 수강권 사용 내역 조회
 - [ ] 수강생 수정/삭제 기능
+- [ ] **주간/월간 이용 횟수 자동 차감 기능 구현**
+  - [ ] `enrollments` 테이블에 `weekly_used_count`, `monthly_used_count` 컬럼 추가
+  - [ ] 예약 생성 시 주간/월간 제한 체크 로직 추가
+  - [ ] 매주/매월 자동 리셋 스케줄러 구현 (Supabase Edge Functions or GitHub Actions)
+  - [ ] 주간/월간 사용 내역 추적 및 리셋 로그
 
 ---
 
