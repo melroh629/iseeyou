@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       bookingEndHoursBefore,
     } = await request.json()
 
-    // 필수 필드 검증 (studentId는 선택사항 - null이면 템플릿)
+    // 필수 필드 검증 (studentId는 선택사항 - null이면 미할당 수강권)
     if (!classTypeId || !name || !totalCount || !validFrom || !validUntil) {
       return NextResponse.json(
         { error: '필수 항목을 모두 입력해주세요.' },

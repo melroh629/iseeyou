@@ -52,7 +52,7 @@ export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}
   const [students, setStudents] = useState<Student[]>([])
   const [classTypes, setClassTypes] = useState<ClassType[]>([])
 
-  const [isTemplate, setIsTemplate] = useState(true) // true = 템플릿, false = 직접 발급
+  const [isUnassigned, setIsUnassigned] = useState(true) // true = 미할당 수강권, false = 직접 발급
   const [selectedStudents, setSelectedStudents] = useState<string[]>([])
 
   const [formData, setFormData] = useState({
@@ -93,12 +93,12 @@ export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}
     setError('')
 
     try {
-      if (!isTemplate && selectedStudents.length === 0) {
+      if (!isUnassigned && selectedStudents.length === 0) {
         throw new Error('최소 한 명의 학생을 선택해주세요.')
       }
 
       // 미할당 모드 or 직접 발급 모드
-      if (isTemplate) {
+      if (isUnassigned) {
         // 미할당 수강권 생성
         const response = await fetch('/api/admin/enrollments', {
           method: 'POST',
@@ -138,7 +138,7 @@ export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}
 
       // 성공
       setOpen(false)
-      setIsTemplate(true)
+      setIsUnassigned(true)
       setSelectedStudents([])
       setFormData({
         classTypeId: '',
@@ -192,15 +192,15 @@ export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}
 
           <div className="grid gap-4 py-4">
             <Tabs
-              value={isTemplate ? 'template' : 'students'}
-              onValueChange={(v) => setIsTemplate(v === 'template')}
+              value={isUnassigned ? 'unassigned' : 'students'}
+              onValueChange={(v) => setIsUnassigned(v === 'unassigned')}
             >
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="template">미할당으로 생성</TabsTrigger>
+                <TabsTrigger value="unassigned">미할당으로 생성</TabsTrigger>
                 <TabsTrigger value="students">학생에게 발급</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="template" className="mt-4">
+              <TabsContent value="unassigned" className="mt-4">
                 <p className="text-sm text-muted-foreground mb-4">
                   미할당으로 생성 후 나중에 학생에게 할당할 수 있습니다.
                 </p>
@@ -386,7 +386,7 @@ export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}
             <Button type="submit" disabled={loading}>
               {loading
                 ? '처리 중...'
-                : isTemplate
+                : isUnassigned
                 ? '수강권 생성'
                 : `${selectedStudents.length}명에게 발급`}
             </Button>

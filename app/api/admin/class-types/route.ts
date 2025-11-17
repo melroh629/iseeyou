@@ -29,6 +29,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     const { name, description, color, defaultCancelHours } = await request.json()
 
     // 필수 필드 검증
@@ -74,6 +75,7 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     const { id, name, description, type, defaultMaxStudents, defaultCancelHours } =
       await request.json()
 
@@ -130,6 +132,7 @@ export async function PATCH(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     const { id } = await request.json()
 
     // 필수 필드 검증

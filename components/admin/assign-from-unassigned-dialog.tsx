@@ -30,15 +30,15 @@ interface Student {
   }
 }
 
-interface AssignFromTemplateDialogProps {
-  templateId: string
-  templateName: string
+interface AssignFromUnassignedDialogProps {
+  ticketId: string
+  ticketName: string
 }
 
-export function AssignFromTemplateDialog({
-  templateId,
-  templateName
-}: AssignFromTemplateDialogProps) {
+export function AssignFromUnassignedDialog({
+  ticketId,
+  ticketName
+}: AssignFromUnassignedDialogProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -80,7 +80,7 @@ export function AssignFromTemplateDialog({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          templateId,
+          ticketId,
           studentId: selectedStudentId,
         }),
       })
@@ -115,7 +115,7 @@ export function AssignFromTemplateDialog({
           <DialogHeader>
             <DialogTitle>수강권 할당</DialogTitle>
             <DialogDescription>
-              {templateName} 템플릿을 학생에게 할당합니다.
+              {ticketName} 미할당 수강권을 학생에게 할당합니다.
             </DialogDescription>
           </DialogHeader>
 

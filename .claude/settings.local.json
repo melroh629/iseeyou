@@ -6,7 +6,10 @@
       "Bash(npm run build:*)",
       "Bash(npx shadcn@latest add:*)",
       "Bash(npm run dev:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(psql:*)",
+      "Bash(cat:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

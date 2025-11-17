@@ -43,7 +43,7 @@ export function AddScheduleForm({ classType }: AddScheduleFormProps) {
 
     try {
       // API 호출 - 고급 모드 사용
-      const response = await fetch('/api/admin/class-templates/advanced', {
+      const response = await fetch('/api/admin/recurring-schedules/advanced', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -129,7 +129,7 @@ export default function NewTicketPage() {
       }
 
       if (selectedStudents.length === 0) {
-        // 학생 선택 안함 → 템플릿 생성
+        // 학생 선택 안함 → 미할당 수강권 생성
         const response = await fetch('/api/admin/enrollments', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

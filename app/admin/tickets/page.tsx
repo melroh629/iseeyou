@@ -84,9 +84,9 @@ export default function TicketsPage() {
     setLoading(true)
     try {
       // 수강권 목록
-      const enrollmentsRes = await fetch('/api/admin/ticket-templates')
+      const enrollmentsRes = await fetch('/api/admin/unassigned-tickets')
       const enrollmentsData = await enrollmentsRes.json()
-      setEnrollments(enrollmentsData.templates || [])
+      setEnrollments(enrollmentsData.enrollments || [])
 
       // 학생 목록
       const studentsRes = await fetch('/api/admin/students')
@@ -150,8 +150,8 @@ export default function TicketsPage() {
     }
   }
 
-  const startAssign = (templateId: string) => {
-    setAssigningId(templateId)
+  const startAssign = (ticketId: string) => {
+    setAssigningId(ticketId)
     setAssignForm({ studentId: '' })
   }
 
@@ -160,7 +160,7 @@ export default function TicketsPage() {
     setAssignForm({ studentId: '' })
   }
 
-  const saveAssign = async (templateId: string) => {
+  const saveAssign = async (ticketId: string) => {
     if (!assignForm.studentId) {
       alert('학생을 선택해주세요.')
       return
@@ -171,7 +171,7 @@ export default function TicketsPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          templateId,
+          ticketId: assigningId,
           studentId: assignForm.studentId,
         }),
       })
@@ -355,7 +355,7 @@ export default function TicketsPage() {
                   ) : (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <User className="h-4 w-4" />
-                      <span>미할당 (템플릿)</span>
+                      <span>미할당 (미할당 수강권)</span>
                     </div>
                   )}
 

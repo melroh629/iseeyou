@@ -87,7 +87,7 @@ export default function NewClassPage() {
 
       if (scheduleMode === 'basic') {
         // 기본 모드: 반복 패턴
-        templateResponse = await fetch('/api/admin/class-templates', {
+        templateResponse = await fetch('/api/admin/recurring-schedules', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -101,7 +101,7 @@ export default function NewClassPage() {
         })
       } else {
         // 고급 모드: 특정 날짜
-        templateResponse = await fetch('/api/admin/class-templates/advanced', {
+        templateResponse = await fetch('/api/admin/recurring-schedules/advanced', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

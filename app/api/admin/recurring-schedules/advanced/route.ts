@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       dateObj.times.forEach((time) => {
         classesToInsert.push({
           class_type_id: classTypeId,
-          template_id: null, // 고급 모드는 템플릿 없음
+          recurring_schedule_id: null, // 고급 모드는 반복 설정 없음 (개별 일정)
           date: dateObj.date,
           start_time: time.start_time,
           end_time: time.end_time,

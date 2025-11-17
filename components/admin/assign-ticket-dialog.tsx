@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,101 +10,106 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
-import { Ticket } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Ticket } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-interface TicketTemplate {
-  id: string
-  name: string
-  total_count: number
-  valid_from: string
-  valid_until: string
-  price: number | null
+interface UnassignedTicket {
+  id: string;
+  name: string;
+  total_count: number;
+  valid_from: string;
+  valid_until: string;
+  price: number | null;
   class_types: {
-    name: string
-    type: string
-  }
+    name: string;
+    type: string;
+  };
 }
 
 interface AssignTicketDialogProps {
-  studentId: string
-  studentName: string
+  studentId: string;
+  studentName: string;
 }
 
-export function AssignTicketDialog({ studentId, studentName }: AssignTicketDialogProps) {
-  const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const router = useRouter()
+export function AssignTicketDialog({
+  studentId,
+  studentName,
+}: AssignTicketDialogProps) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
-  const [templates, setTemplates] = useState<TicketTemplate[]>([])
-  const [selectedTemplateId, setSelectedTemplateId] = useState('')
+  const [unassignedTickets, setUnassignedTickets] = useState<UnassignedTicket[]>([]);
+  const [selectedTicketId, setSelectedTicketId] = useState("");
 
-  // 템플릿 목록 불러오기
+  // 미할당 수강권 목록 불러오기
   useEffect(() => {
     if (open) {
-      fetchTemplates()
+      fetchUnassignedTickets();
     }
-  }, [open])
+  }, [open]);
 
-  const fetchTemplates = async () => {
+  const fetchUnassignedTickets = async () => {
     try {
-      const response = await fetch('/api/admin/ticket-templates')
-      const data = await response.json()
-      // 템플릿만 필터링 (student_id가 null인 것)
-      const templatesOnly = (data.templates || []).filter((t: any) => !t.students)
-      setTemplates(templatesOnly)
+      const response = await fetch("/api/admin/unassigned-tickets");
+      const data = await response.json();
+      // 미할당 수강권만 필터링 (student_id가 null인 것)
+      const unassignedOnly = (data.enrollments || data.unassignedTickets || []).filter(
+        (t: any) => !t.students
+      );
+      setUnassignedTickets(unassignedOnly);
     } catch (err) {
-      console.error('템플릿 조회 실패:', err)
+      console.error("미할당 수강권 조회 실패:", err);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-    if (!selectedTemplateId) {
-      setError('수강권 템플릿을 선택해주세요.')
-      setLoading(false)
-      return
+    if (!selectedTicketId) {
+      setError("수강권 미할당 수강권을 선택해주세요.");
+      setLoading(false);
+      return;
     }
 
     try {
-      const response = await fetch('/api/admin/assign-ticket', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/admin/assign-ticket", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          templateId: selectedTemplateId,
+          ticketId: selectedTicketId,
           studentId,
         }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || '수강권 할당에 실패했습니다.')
+        throw new Error(data.error || "수강권 할당에 실패했습니다.");
       }
 
       // 성공
-      setOpen(false)
-      setSelectedTemplateId('')
-      router.refresh()
+      setOpen(false);
+      setSelectedTicketId("");
+      router.refresh();
     } catch (err: any) {
-      setError(err.message)
+      setError(err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -125,34 +130,42 @@ export function AssignTicketDialog({ studentId, studentName }: AssignTicketDialo
 
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="template">
-                수강권 템플릿 <span className="text-red-500">*</span>
+              <Label htmlFor="ticket">
+                수강권 선택<span className="text-red-500">*</span>
               </Label>
               <Select
-                value={selectedTemplateId}
-                onValueChange={setSelectedTemplateId}
+                value={selectedTicketId}
+                onValueChange={setSelectedTicketId}
                 disabled={loading}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="템플릿을 선택하세요" />
+                  <SelectValue placeholder="미할당 수강권을 선택하세요" />
                 </SelectTrigger>
                 <SelectContent>
-                  {templates.length === 0 ? (
+                  {unassignedTickets.length === 0 ? (
                     <div className="p-4 text-center text-sm text-muted-foreground">
-                      사용 가능한 템플릿이 없습니다
+                      사용 가능한 미할당 수강권이 없습니다
                     </div>
                   ) : (
-                    templates.map((template) => (
-                      <SelectItem key={template.id} value={template.id}>
+                    unassignedTickets.map((ticket) => (
+                      <SelectItem key={ticket.id} value={ticket.id}>
                         <div className="flex flex-col">
                           <span className="font-medium">
-                            {template.class_types.name} - {template.name}
+                            {ticket.class_types.name} - {ticket.name}
                           </span>
                           <span className="text-xs text-muted-foreground">
-                            {template.total_count}회권 |{' '}
-                            {template.price ? `${template.price.toLocaleString()}원` : '무료'} |{' '}
-                            {new Date(template.valid_from).toLocaleDateString('ko-KR')} ~{' '}
-                            {new Date(template.valid_until).toLocaleDateString('ko-KR')}
+                            {ticket.total_count}회권 |{" "}
+                            {ticket.price
+                              ? `${ticket.price.toLocaleString()}원`
+                              : "무료"}{" "}
+                            |{" "}
+                            {new Date(ticket.valid_from).toLocaleDateString(
+                              "ko-KR"
+                            )}{" "}
+                            ~{" "}
+                            {new Date(ticket.valid_until).toLocaleDateString(
+                              "ko-KR"
+                            )}
                           </span>
                         </div>
                       </SelectItem>
@@ -179,11 +192,11 @@ export function AssignTicketDialog({ studentId, studentName }: AssignTicketDialo
               취소
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? '할당 중...' : '할당'}
+              {loading ? "할당 중..." : "할당"}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

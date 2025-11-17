@@ -16,7 +16,7 @@ const supabaseAdmin = createClient(
 export async function GET() {
   try {
     // 모든 수강권 조회 (미할당 + 할당된 수강권)
-    const { data: templates, error } = await supabaseAdmin
+    const { data: enrollments, error } = await supabaseAdmin
       .from('enrollments')
       .select(`
         id,
@@ -51,7 +51,7 @@ export async function GET() {
       )
     }
 
-    return NextResponse.json({ templates })
+    return NextResponse.json({ enrollments })
   } catch (error: any) {
     console.error('수강권 조회 에러:', error)
     return NextResponse.json(

@@ -67,9 +67,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 1. 템플릿 생성
-    const { data: template, error: templateError } = await supabaseAdmin
-      .from('class_templates')
+    // 1. 반복 설정 생성
+    const { data: recurringSetting, error: recurringError } = await supabaseAdmin
+      .from('recurring_schedules')
       .insert({
         class_type_id: classTypeId,
         start_date: startDate,
@@ -82,9 +82,9 @@ export async function POST(request: NextRequest) {
       .select()
       .single()
 
-    if (templateError || !template) {
-      console.error('템플릿 생성 실패:', templateError)
-      return NextResponse.json({ error: '템플릿 생성에 실패했습니다.' }, { status: 500 })
+    if (recurringError || !recurringSetting) {
+      console.error('반복 설정 생성 실패:', recurringError)
+      return NextResponse.json({ error: '반복 설정 생성에 실패했습니다.' }, { status: 500 })
     }
 
     // 2. 패턴에 따라 실제 수업 일정 생성
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
     // 3. classes 테이블에 일괄 삽입
     const classesToInsert = scheduleDates.map((schedule) => ({
       class_type_id: classTypeId,
-      template_id: template.id,
+      recurring_schedule_id: recurringSetting.id,
       date: schedule.date,
       start_time: schedule.startTime,
       end_time: schedule.endTime,
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
 
     if (classesError) {
       console.error('수업 일정 생성 실패:', classesError)
-      // 템플릿은 삭제하지 않음 (나중에 재시도 가능)
+      // 반복 설정은 삭제하지 않음 (나중에 재시도 가능)
       return NextResponse.json(
         { error: '수업 일정 생성에 실패했습니다.' },
         { status: 500 }
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      template,
+      recurringSetting,
       classes,
       summary: {
         totalClasses: classes?.length || 0,
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error: any) {
-    console.error('템플릿 생성 에러:', error)
+    console.error('반복 설정 생성 에러:', error)
     return NextResponse.json(
       { error: error.message || '서버 오류가 발생했습니다.' },
       { status: 500 }
@@ -149,7 +149,7 @@ export async function GET(request: NextRequest) {
     const classTypeId = searchParams.get('classTypeId')
 
     let query = supabaseAdmin
-      .from('class_templates')
+      .from('recurring_schedules')
       .select(
         `
         *,
@@ -167,16 +167,16 @@ export async function GET(request: NextRequest) {
       query = query.eq('class_type_id', classTypeId)
     }
 
-    const { data: templates, error } = await query
+    const { data: recurringSchedules, error } = await query
 
     if (error) {
-      console.error('템플릿 조회 실패:', error)
-      return NextResponse.json({ error: '템플릿 조회에 실패했습니다.' }, { status: 500 })
+      console.error('반복 설정 조회 실패:', error)
+      return NextResponse.json({ error: '반복 설정 조회에 실패했습니다.' }, { status: 500 })
     }
 
-    return NextResponse.json({ templates })
+    return NextResponse.json({ recurringSchedules })
   } catch (error: any) {
-    console.error('템플릿 조회 에러:', error)
+    console.error('반복 설정 조회 에러:', error)
     return NextResponse.json(
       { error: error.message || '서버 오류가 발생했습니다.' },
       { status: 500 }
