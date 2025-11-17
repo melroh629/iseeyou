@@ -28,7 +28,7 @@ interface ClassSchedule {
   max_students: number | null;
   status: string;
   notes: string | null;
-  template_id: string | null;
+  recurring_schedule_id: string | null;
   bookings: Array<{
     id: string;
     status: string;
@@ -71,7 +71,7 @@ export default async function ClassDetailPage({
       max_students,
       status,
       notes,
-      template_id
+      recurring_schedule_id
     `
     )
     .eq("class_type_id", params.id)
