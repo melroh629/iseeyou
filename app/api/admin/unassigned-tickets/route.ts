@@ -30,7 +30,8 @@ export async function GET() {
           type
         )
       `)
-      .order('created_at', { ascending: false })
+      .order('status', { ascending: true })  // active가 expired보다 먼저
+      .order('valid_until', { ascending: false })  // 만료일이 늦은 순서
 
     if (error) {
       console.error('수강권 조회 실패:', error)

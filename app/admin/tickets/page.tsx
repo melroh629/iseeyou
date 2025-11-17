@@ -283,14 +283,27 @@ export default function TicketsPage() {
           {enrollments.map((enrollment) => {
             const isEditing = editingId === enrollment.id
             const isAssigning = assigningId === enrollment.id
+            const isExpired = enrollment.status === 'expired' || getDday(enrollment.valid_until) === '만료'
 
             return (
-              <Card key={enrollment.id} className="hover:shadow-lg transition-shadow">
+              <Card
+                key={enrollment.id}
+                className={`transition-all ${
+                  isExpired
+                    ? 'opacity-50 bg-muted/30 hover:opacity-60'
+                    : 'hover:shadow-lg'
+                }`}
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <CardTitle className="flex items-center gap-2">
                       <Ticket className="h-5 w-5 text-primary" />
                       {enrollment.classes.name}
+                      {isExpired && (
+                        <span className="text-xs font-normal text-muted-foreground ml-1">
+                          (만료됨)
+                        </span>
+                      )}
                     </CardTitle>
                     <div className="flex gap-2">
                       {!enrollment.students && (

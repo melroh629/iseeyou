@@ -45,6 +45,7 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
       valid_from,
       valid_until,
       created_at,
+      status,
       classes (
         id,
         name,
@@ -52,7 +53,8 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
       )
     `)
     .eq('student_id', params.id)
-    .order('created_at', { ascending: false })
+    .order('status', { ascending: true })  // active가 expired보다 먼저 (알파벳 순서)
+    .order('valid_until', { ascending: false })  // 그 다음 만료일이 늦은 순서
 
   if (enrollmentsError) {
     console.error('수강권 조회 실패:', enrollmentsError)
@@ -158,9 +160,17 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
               const usagePercent = Math.round(
                 (enrollment.used_count / enrollment.total_count) * 100
               )
+              const isExpired = enrollment.status === 'expired' || dDay < 0
 
               return (
-                <Card key={enrollment.id} className="hover:shadow-md transition-shadow">
+                <Card
+                  key={enrollment.id}
+                  className={`transition-all ${
+                    isExpired
+                      ? 'opacity-50 bg-muted/30 hover:opacity-60'
+                      : 'hover:shadow-md'
+                  }`}
+                >
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
@@ -169,6 +179,11 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
                           style={{ backgroundColor: enrollment.classes.color || '#3b82f6' }}
                         />
                         {enrollment.classes.name}
+                        {isExpired && (
+                          <span className="text-xs font-normal text-muted-foreground ml-2">
+                            (만료됨)
+                          </span>
+                        )}
                       </CardTitle>
                       <DeleteEnrollmentButton enrollmentId={enrollment.id} />
                     </div>
