@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     let userId: string
-    let userRole: string
+    let userRole: 'student' | 'admin'
 
     if (existingUser) {
       // 기존 사용자
