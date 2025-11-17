@@ -9,10 +9,15 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DateRangePicker } from '@/components/ui/date-range-picker'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ArrowLeft } from 'lucide-react'
+import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { ArrowLeft, CalendarIcon } from 'lucide-react'
 import Link from 'next/link'
 import { SpecificDate } from '@/lib/types/schedule'
 import { AdvancedScheduleMode } from '@/components/admin/schedule/advanced-schedule-mode'
+import { format } from 'date-fns'
+import { ko } from 'date-fns/locale'
+import { cn } from '@/lib/utils'
 
 interface AddScheduleFormProps {
   classType: {
@@ -29,7 +34,7 @@ export function AddScheduleForm({ classType }: AddScheduleFormProps) {
   const [mode, setMode] = useState<'simple' | 'advanced'>('simple')
 
   // 간단 모드 상태
-  const [simpleDate, setSimpleDate] = useState('')
+  const [simpleDate, setSimpleDate] = useState<Date>()
   const [simpleStartTime, setSimpleStartTime] = useState('')
   const [simpleEndTime, setSimpleEndTime] = useState('')
 
@@ -51,6 +56,7 @@ export function AddScheduleForm({ classType }: AddScheduleFormProps) {
         // 간단 모드: 단일 일정 생성
         if (!simpleDate || !simpleStartTime || !simpleEndTime) {
           alert('날짜와 시간을 모두 입력해주세요.')
+          setLoading(false)
           return
         }
 
@@ -59,7 +65,7 @@ export function AddScheduleForm({ classType }: AddScheduleFormProps) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             classTypeId: classType.id,
-            date: simpleDate,
+            date: format(simpleDate, 'yyyy-MM-dd'),
             startTime: simpleStartTime,
             endTime: simpleEndTime,
             type: classType.type,
@@ -149,14 +155,30 @@ export function AddScheduleForm({ classType }: AddScheduleFormProps) {
                 </p>
 
                 <div className="space-y-2">
-                  <Label htmlFor="simpleDate">날짜 *</Label>
-                  <Input
-                    id="simpleDate"
-                    type="date"
-                    value={simpleDate}
-                    onChange={(e) => setSimpleDate(e.target.value)}
-                    required={mode === 'simple'}
-                  />
+                  <Label>날짜 *</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !simpleDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {simpleDate ? format(simpleDate, "PPP", { locale: ko }) : "날짜를 선택하세요"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={simpleDate}
+                        onSelect={setSimpleDate}
+                        locale={ko}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
