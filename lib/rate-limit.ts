@@ -13,7 +13,7 @@ const store = new Map<string, RateLimitEntry>()
 // 주기적으로 만료된 항목 정리
 setInterval(() => {
   const now = Date.now()
-  for (const [key, entry] of store.entries()) {
+  for (const [key, entry] of Array.from(store.entries())) {
     if (now > entry.resetAt) {
       store.delete(key)
     }
