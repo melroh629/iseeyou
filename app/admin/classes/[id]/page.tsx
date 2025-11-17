@@ -122,9 +122,9 @@ export default async function ClassDetailPage({
   }, {} as Record<string, ClassSchedule[]>);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 px-4 sm:px-6">
       {/* 헤더 */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         <Link href="/admin/classes">
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-4 w-4" />
@@ -138,23 +138,23 @@ export default async function ClassDetailPage({
                 style={{ backgroundColor: classDetail.color }}
               />
             )}
-            <h1 className="text-3xl font-bold">{classDetail.name}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">{classDetail.name}</h1>
           </div>
           {classDetail.description && (
-            <p className="text-muted-foreground mt-1">
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
               {classDetail.description}
             </p>
           )}
         </div>
-        <div className="flex gap-2">
-          <Link href={`/admin/classes/${params.id}/add-schedule`}>
-            <Button>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Link href={`/admin/classes/${params.id}/add-schedule`} className="w-full sm:w-auto">
+            <Button className="w-full">
               <Plus className="mr-2 h-4 w-4" />
               일정 추가
             </Button>
           </Link>
-          <Link href={`/admin/classes/${params.id}/edit`}>
-            <Button variant="outline">
+          <Link href={`/admin/classes/${params.id}/edit`} className="w-full sm:w-auto">
+            <Button variant="outline" className="w-full">
               <Edit className="mr-2 h-4 w-4" />
               수업 수정
             </Button>
@@ -171,7 +171,7 @@ export default async function ClassDetailPage({
         <CardHeader>
           <CardTitle>수업 정보</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-3 gap-4">
+        <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <p className="text-sm text-muted-foreground">총 일정 수</p>
             <p className="text-2xl font-bold">{classList.length}개</p>
@@ -239,13 +239,13 @@ export default async function ClassDetailPage({
                           key={schedule.id}
                           className="bg-card rounded-lg shadow-sm hover:shadow-md transition-shadow p-4"
                         >
-                          <div className="flex items-center justify-between">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             {/* 왼쪽: 시간 & 정보 */}
-                            <div className="flex items-center gap-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
                               {/* 시간 */}
                               <div className="flex items-center gap-2 min-w-[140px]">
                                 <Clock className="h-4 w-4 text-muted-foreground" />
-                                <span className="font-semibold">
+                                <span className="font-semibold text-sm sm:text-base">
                                   {schedule.start_time.substring(0, 5)} ~{" "}
                                   {schedule.end_time.substring(0, 5)}
                                 </span>

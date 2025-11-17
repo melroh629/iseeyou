@@ -61,16 +61,16 @@ export default async function ClassesPage() {
   const classList = classTypesWithCounts
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 px-4 sm:px-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">수업 관리</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold">수업 관리</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             총 {classList?.length || 0}개의 수업
           </p>
         </div>
         <Link href="/admin/classes/new">
-          <Button>
+          <Button className="w-full sm:w-auto">
             <Plus className="mr-2 h-4 w-4" />
             새 수업 만들기
           </Button>
@@ -90,7 +90,7 @@ export default async function ClassesPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {classList.map((classType: any) => {
             const hasSchedules = classType.scheduleCount > 0
 

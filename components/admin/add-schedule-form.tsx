@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DateRangePicker } from '@/components/ui/date-range-picker'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { SpecificDate } from '@/lib/types/schedule'
@@ -25,43 +26,83 @@ interface AddScheduleFormProps {
 export function AddScheduleForm({ classType }: AddScheduleFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [mode, setMode] = useState<'simple' | 'advanced'>('simple')
+
+  // 간단 모드 상태
+  const [simpleDate, setSimpleDate] = useState('')
+  const [simpleStartTime, setSimpleStartTime] = useState('')
+  const [simpleEndTime, setSimpleEndTime] = useState('')
+
+  // 고급 모드 상태
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [specificDates, setSpecificDates] = useState<SpecificDate[]>([])
+
+  // 공통 상태
   const [maxStudents, setMaxStudents] = useState(classType.default_max_students || 6)
   const [notes, setNotes] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    if (specificDates.length === 0) {
-      alert('최소 하나의 일정을 선택해주세요.')
-      return
-    }
-
     setLoading(true)
 
     try {
-      // API 호출 - 고급 모드 사용
-      const response = await fetch('/api/admin/recurring-schedules/advanced', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          classTypeId: classType.id,
-          specificDates,
-          type: classType.type,
-          maxStudents: classType.type === 'group' ? maxStudents : null,
-          notes: notes || null,
-        }),
-      })
+      if (mode === 'simple') {
+        // 간단 모드: 단일 일정 생성
+        if (!simpleDate || !simpleStartTime || !simpleEndTime) {
+          alert('날짜와 시간을 모두 입력해주세요.')
+          return
+        }
 
-      const data = await response.json()
+        const response = await fetch('/api/admin/classes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            classTypeId: classType.id,
+            date: simpleDate,
+            startTime: simpleStartTime,
+            endTime: simpleEndTime,
+            type: classType.type,
+            maxStudents: classType.type === 'group' ? maxStudents : null,
+            notes: notes || null,
+          }),
+        })
 
-      if (!response.ok) {
-        throw new Error(data.error || '일정 추가에 실패했습니다.')
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || '일정 추가에 실패했습니다.')
+        }
+
+        alert('일정이 추가되었습니다.')
+      } else {
+        // 고급 모드: 다중 일정 생성
+        if (specificDates.length === 0) {
+          alert('최소 하나의 일정을 선택해주세요.')
+          return
+        }
+
+        const response = await fetch('/api/admin/recurring-schedules/advanced', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            classTypeId: classType.id,
+            specificDates,
+            type: classType.type,
+            maxStudents: classType.type === 'group' ? maxStudents : null,
+            notes: notes || null,
+          }),
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || '일정 추가에 실패했습니다.')
+        }
+
+        alert(`${specificDates.length}개의 일정이 추가되었습니다.`)
       }
 
-      alert(`${specificDates.length}개의 일정이 추가되었습니다.`)
       router.push(`/admin/classes/${classType.id}`)
       router.refresh()
     } catch (error: any) {
@@ -72,7 +113,7 @@ export function AddScheduleForm({ classType }: AddScheduleFormProps) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 px-4 sm:px-6">
       {/* 헤더 */}
       <div className="flex items-center gap-4">
         <Link href={`/admin/classes/${classType.id}`}>
@@ -81,49 +122,110 @@ export function AddScheduleForm({ classType }: AddScheduleFormProps) {
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold">일정 추가</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold">일정 추가</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             {classType.name} 수업에 새로운 일정을 추가합니다.
           </p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* 1. 기간 선택 */}
+        {/* 모드 선택 */}
         <Card>
           <CardHeader>
-            <CardTitle>01. 일정 기간</CardTitle>
+            <CardTitle>일정 추가 방식</CardTitle>
           </CardHeader>
           <CardContent>
-            <DateRangePicker
-              startDate={startDate}
-              endDate={endDate}
-              onStartChange={setStartDate}
-              onEndChange={setEndDate}
-              required
-            />
+            <Tabs value={mode} onValueChange={(v) => setMode(v as 'simple' | 'advanced')}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="simple">간단 모드</TabsTrigger>
+                <TabsTrigger value="advanced">고급 모드</TabsTrigger>
+              </TabsList>
+
+              {/* 간단 모드 */}
+              <TabsContent value="simple" className="space-y-4 mt-4">
+                <p className="text-sm text-muted-foreground">
+                  하나의 일정을 빠르게 추가합니다.
+                </p>
+
+                <div className="space-y-2">
+                  <Label htmlFor="simpleDate">날짜 *</Label>
+                  <Input
+                    id="simpleDate"
+                    type="date"
+                    value={simpleDate}
+                    onChange={(e) => setSimpleDate(e.target.value)}
+                    required={mode === 'simple'}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="simpleStartTime">시작 시간 *</Label>
+                    <Input
+                      id="simpleStartTime"
+                      type="time"
+                      value={simpleStartTime}
+                      onChange={(e) => setSimpleStartTime(e.target.value)}
+                      required={mode === 'simple'}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="simpleEndTime">종료 시간 *</Label>
+                    <Input
+                      id="simpleEndTime"
+                      type="time"
+                      value={simpleEndTime}
+                      onChange={(e) => setSimpleEndTime(e.target.value)}
+                      required={mode === 'simple'}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* 고급 모드 */}
+              <TabsContent value="advanced" className="space-y-6 mt-4">
+                <p className="text-sm text-muted-foreground">
+                  여러 날짜와 시간대의 일정을 한 번에 추가합니다.
+                </p>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>01. 일정 기간</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <DateRangePicker
+                      startDate={startDate}
+                      endDate={endDate}
+                      onStartChange={setStartDate}
+                      onEndChange={setEndDate}
+                      required={mode === 'advanced'}
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>02. 날짜 및 시간 선택</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <AdvancedScheduleMode
+                      startDate={startDate}
+                      endDate={endDate}
+                      specificDates={specificDates}
+                      onSpecificDatesChange={setSpecificDates}
+                    />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
 
-        {/* 2. 날짜 선택 (캘린더) */}
+        {/* 수업 설정 */}
         <Card>
           <CardHeader>
-            <CardTitle>02. 날짜 선택</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AdvancedScheduleMode
-              startDate={startDate}
-              endDate={endDate}
-              specificDates={specificDates}
-              onSpecificDatesChange={setSpecificDates}
-            />
-          </CardContent>
-        </Card>
-
-        {/* 3. 수업 설정 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>03. 수업 설정</CardTitle>
+            <CardTitle>수업 설정</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {classType.type === 'group' && (
@@ -154,13 +256,13 @@ export function AddScheduleForm({ classType }: AddScheduleFormProps) {
         </Card>
 
         {/* 제출 버튼 */}
-        <div className="flex gap-3 justify-end">
-          <Link href={`/admin/classes/${classType.id}`}>
-            <Button type="button" variant="outline">
+        <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
+          <Link href={`/admin/classes/${classType.id}`} className="w-full sm:w-auto">
+            <Button type="button" variant="outline" className="w-full">
               취소
             </Button>
           </Link>
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" disabled={loading} className="w-full sm:w-auto">
             {loading ? '추가 중...' : '일정 추가'}
           </Button>
         </div>
