@@ -1,6 +1,6 @@
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
-import { notFound, redirect } from 'next/navigation'
-import { EditClassTypeForm } from '@/components/admin/edit-class-type-form'
+import { notFound } from 'next/navigation'
+import { EditClassPage } from '@/components/admin/edit-class-page'
 
 // 캐싱 비활성화
 export const dynamic = 'force-dynamic'
@@ -11,7 +11,7 @@ export default async function EditClassTypePage({ params }: { params: { id: stri
 
   // 수업 타입 조회
   const { data: classType, error } = await supabase
-    .from('schedules')
+    .from('classes')
     .select('*')
     .eq('id', params.id)
     .single()
@@ -21,8 +21,8 @@ export default async function EditClassTypePage({ params }: { params: { id: stri
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <EditClassTypeForm classType={classType} />
+    <div className="max-w-6xl mx-auto px-4 sm:px-6">
+      <EditClassPage classType={classType} />
     </div>
   )
 }

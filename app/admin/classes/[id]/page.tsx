@@ -1,7 +1,7 @@
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, Clock, Users, Edit, Plus } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Users, Edit } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ScheduleActions } from "@/components/admin/schedule-actions";
@@ -49,7 +49,7 @@ export default async function ClassDetailPage({
 
   // 수업 타입 정보 조회
   const { data: classType, error: classTypeError } = await supabase
-    .from("class_types")
+    .from("classes")
     .select("*")
     .eq("id", params.id)
     .single();
@@ -60,7 +60,7 @@ export default async function ClassDetailPage({
 
   // 해당 수업의 모든 일정 조회
   const { data: schedules, error: schedulesError } = await supabase
-    .from("classes")
+    .from("schedules")
     .select(
       `
       id,
@@ -89,7 +89,7 @@ export default async function ClassDetailPage({
     .select(
       `
       id,
-      class_id,
+      schedule_id,
       status,
       students (
         users (
@@ -98,14 +98,14 @@ export default async function ClassDetailPage({
       )
     `
     )
-    .in("class_id", scheduleIds);
+    .in("schedule_id", scheduleIds);
 
   // 일정에 예약 정보 병합
   const schedulesWithBookings =
     schedules?.map((schedule: any) => ({
       ...schedule,
       bookings:
-        bookingsData?.filter((b: any) => b.class_id === schedule.id) || [],
+        bookingsData?.filter((b: any) => b.schedule_id === schedule.id) || [],
     })) || [];
 
   const classDetail = classType as unknown as ClassDetail;
@@ -147,16 +147,10 @@ export default async function ClassDetailPage({
           )}
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <Link href={`/admin/classes/${params.id}/add-schedule`} className="w-full sm:w-auto">
-            <Button className="w-full">
-              <Plus className="mr-2 h-4 w-4" />
-              일정 추가
-            </Button>
-          </Link>
           <Link href={`/admin/classes/${params.id}/edit`} className="w-full sm:w-auto">
-            <Button variant="outline" className="w-full">
+            <Button className="w-full">
               <Edit className="mr-2 h-4 w-4" />
-              수업 수정
+              수업 관리
             </Button>
           </Link>
           <DeleteClassTypeDialog
