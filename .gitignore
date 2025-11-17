@@ -36,5 +36,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-#docs
-/docs
+# docs 내부에 있는 모든 파일 및 폴더 무시
+/docs/
+/docs/**/*
