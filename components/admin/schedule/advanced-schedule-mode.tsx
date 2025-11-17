@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
 import { TimeSlotInput } from '@/components/ui/time-slot-input'
 import { Plus } from 'lucide-react'
 import { SpecificDate } from '@/lib/types/schedule'
@@ -9,7 +10,6 @@ import {
   addTimeToDate,
   removeTimeFromDate,
   updateTimeForDate,
-  generateDateRange,
 } from '@/lib/utils/time-slot'
 
 interface AdvancedScheduleModeProps {
@@ -25,8 +25,6 @@ export function AdvancedScheduleMode({
   specificDates,
   onSpecificDatesChange,
 }: AdvancedScheduleModeProps) {
-  const calendarDates = generateDateRange(startDate, endDate)
-
   const handleToggleDate = (dateStr: string) => {
     const newDates = toggleDate(specificDates, dateStr)
     onSpecificDatesChange(newDates)
@@ -66,35 +64,48 @@ export function AdvancedScheduleMode({
     )
   }
 
+  // 유효성 검사: 종료일이 시작일보다 빠른지 확인
+  if (new Date(endDate) < new Date(startDate)) {
+    return (
+      <p className="text-sm text-destructive text-center py-8">
+        종료일은 시작일보다 늦어야 합니다
+      </p>
+    )
+  }
+
+  // 선택된 날짜들을 Date 객체 배열로 변환
+  const selectedDates = specificDates.map((d) => new Date(d.date))
+
   return (
     <div className="space-y-4">
       <div className="text-sm text-muted-foreground">
         날짜를 클릭하여 수업을 추가하세요 (선택: {specificDates.length}개)
       </div>
 
-      {/* 간단한 날짜 그리드 */}
-      <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
-        {calendarDates.map((dateStr) => {
-          const date = new Date(dateStr)
-          const isSelected = specificDates.some((d) => d.date === dateStr)
+      {/* Calendar 컴포넌트 사용 */}
+      <Calendar
+        mode="multiple"
+        selected={selectedDates}
+        onSelect={(dates) => {
+          if (!dates) return
+          // 새로 선택된 날짜들
+          const newDateStrs = dates.map((d) => d.toISOString().split('T')[0])
+          const currentDateStrs = specificDates.map((d) => d.date)
 
-          return (
-            <Button
-              key={dateStr}
-              type="button"
-              variant={isSelected ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => handleToggleDate(dateStr)}
-              className="h-16 flex flex-col items-center justify-center"
-            >
-              <div className="text-xs opacity-70">
-                {date.toLocaleDateString('ko-KR', { weekday: 'short' })}
-              </div>
-              <div className="text-lg font-bold">{date.getDate()}</div>
-            </Button>
-          )
-        })}
-      </div>
+          // 추가된 날짜 찾기
+          const added = newDateStrs.find((d) => !currentDateStrs.includes(d))
+          // 제거된 날짜 찾기
+          const removed = currentDateStrs.find((d) => !newDateStrs.includes(d))
+
+          if (added) {
+            handleToggleDate(added)
+          } else if (removed) {
+            handleToggleDate(removed)
+          }
+        }}
+        disabled={{ before: new Date(startDate), after: new Date(endDate) }}
+        className="rounded-md border"
+      />
 
       {/* 선택된 날짜별 시간 설정 */}
       {specificDates.length > 0 && (

@@ -1,3 +1,4 @@
+import { Badge } from '@/components/ui/badge'
 import {
   SCHEDULE_STATUS_CONFIG,
   getScheduleDisplayStatus,
@@ -18,10 +19,8 @@ export function ScheduleStatusBadge({
   const config = SCHEDULE_STATUS_CONFIG[displayStatus]
 
   return (
-    <span
-      className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full ${config.className}`}
-    >
+    <Badge variant="outline" className={config.className}>
       {config.label}
-    </span>
+    </Badge>
   )
 }
