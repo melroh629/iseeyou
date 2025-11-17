@@ -29,7 +29,7 @@ export default async function ClassesPage() {
 
   // 수업 타입 조회
   const { data: classTypes, error } = await supabase
-    .from('schedules')
+    .from('classes')
     .select('id, name, description, color, type')
     .order('created_at', { ascending: false })
 
