@@ -12,7 +12,7 @@ export async function PATCH(
 
     // 수업 타입 업데이트
     const { error } = await supabaseAdmin
-      .from('class_types')
+      .from('classes')
       .update({
         name,
         description: description || null,
@@ -47,7 +47,7 @@ export async function DELETE(
     const { data: classes, error: classesError } = await supabaseAdmin
       .from('classes')
       .select('id')
-      .eq('class_type_id', params.id)
+      .eq('class_id', params.id)
 
     if (classesError) {
       console.error('일정 조회 실패:', classesError)
@@ -84,7 +84,7 @@ export async function DELETE(
       const { error: deleteClassesError } = await supabaseAdmin
         .from('classes')
         .delete()
-        .eq('class_type_id', params.id)
+        .eq('class_id', params.id)
 
       if (deleteClassesError) {
         console.error('일정 삭제 실패:', deleteClassesError)
@@ -94,7 +94,7 @@ export async function DELETE(
 
     // 5. 수업 타입 삭제
     const { error: deleteError } = await supabaseAdmin
-      .from('class_types')
+      .from('classes')
       .delete()
       .eq('id', params.id)
 

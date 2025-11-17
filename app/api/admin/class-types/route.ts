@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const supabaseAdmin = getSupabaseAdmin()
     const { data: classTypes, error } = await supabaseAdmin
-      .from('class_types')
+      .from('classes')
       .select('*')
       .order('name', { ascending: true })
 
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     // 수업 종류 생성
     const { data: newClassType, error } = await supabaseAdmin
-      .from('class_types')
+      .from('classes')
       .insert({
         name,
         description: description || null,
@@ -97,7 +97,7 @@ export async function PATCH(request: NextRequest) {
 
     // 수업 종류 수정
     const { data: updatedClassType, error } = await supabaseAdmin
-      .from('class_types')
+      .from('classes')
       .update({
         name,
         description: description || null,
@@ -145,7 +145,7 @@ export async function DELETE(request: NextRequest) {
 
     // 수업 종류 삭제
     const { error } = await supabaseAdmin
-      .from('class_types')
+      .from('classes')
       .delete()
       .eq('id', id)
 

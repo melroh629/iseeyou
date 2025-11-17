@@ -46,7 +46,7 @@ export default function NewTicketPage() {
   const [selectedStudents, setSelectedStudents] = useState<string[]>([])
 
   const [formData, setFormData] = useState({
-    classTypeId: '',
+    classId: '',
     ticketType: 'count_based', // 회수제 / 기간제
     name: '',
     color: '#3b82f6',
@@ -109,7 +109,7 @@ export default function NewTicketPage() {
     try {
       // API에 전송할 데이터 구성
       const enrollmentData = {
-        classTypeId: formData.classTypeId,
+        classId: formData.classId,
         ticketType: formData.ticketType,
         name: formData.name,
         color: formData.color,
@@ -202,9 +202,9 @@ export default function NewTicketPage() {
           </CardHeader>
           <CardContent>
             <Select
-              value={formData.classTypeId}
+              value={formData.classId}
               onValueChange={(value) =>
-                setFormData({ ...formData, classTypeId: value })
+                setFormData({ ...formData, classId: value })
               }
               required
             >

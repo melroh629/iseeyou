@@ -91,7 +91,7 @@ export default function NewClassPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            classTypeId: classTypeData.classType.id,
+            classId: classTypeData.classType.id,
             startDate,
             endDate,
             weeklyPattern,
@@ -105,7 +105,7 @@ export default function NewClassPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            classTypeId: classTypeData.classType.id,
+            classId: classTypeData.classType.id,
             specificDates,
             type,
             maxStudents: type === 'group' ? maxStudents : null,

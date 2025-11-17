@@ -9,10 +9,10 @@ interface SpecificDate {
 export async function POST(request: NextRequest) {
   try {
     const supabaseAdmin = getSupabaseAdmin()
-    const { classTypeId, specificDates, type, maxStudents } = await request.json()
+    const { classId, specificDates, type, maxStudents } = await request.json()
 
     // 필수 필드 검증
-    if (!classTypeId || !specificDates || specificDates.length === 0 || !type) {
+    if (!classId || !specificDates || specificDates.length === 0 || !type) {
       return NextResponse.json(
         { error: '필수 항목을 모두 입력해주세요.' },
         { status: 400 }
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     specificDates.forEach((dateObj: SpecificDate) => {
       dateObj.times.forEach((time) => {
         classesToInsert.push({
-          class_type_id: classTypeId,
+          class_id: classId,
           recurring_schedule_id: null, // 고급 모드는 반복 설정 없음 (개별 일정)
           date: dateObj.date,
           start_time: time.start_time,
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     })
 
     const { data: classes, error: classesError } = await supabaseAdmin
-      .from('classes')
+      .from('schedules')
       .insert(classesToInsert)
       .select()
 

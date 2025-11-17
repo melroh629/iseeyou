@@ -74,7 +74,7 @@ export default async function ClassDetailPage({
       recurring_schedule_id
     `
     )
-    .eq("class_type_id", params.id)
+    .eq("class_id", params.id)
     .order("date", { ascending: true })
     .order("start_time", { ascending: true });
 
@@ -160,7 +160,7 @@ export default async function ClassDetailPage({
             </Button>
           </Link>
           <DeleteClassTypeDialog
-            classTypeId={params.id}
+            classId={params.id}
             classTypeName={classDetail.name}
           />
         </div>

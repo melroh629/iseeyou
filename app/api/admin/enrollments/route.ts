@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     const supabaseAdmin = getSupabaseAdmin()
     const {
       studentId,
-      classTypeId,
+      classId,
       name,
       totalCount,
       validFrom,
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     } = await request.json()
 
     // 필수 필드 검증 (studentId는 선택사항 - null이면 미할당 수강권)
-    if (!classTypeId || !name || !totalCount || !validFrom || !validUntil) {
+    if (!classId || !name || !totalCount || !validFrom || !validUntil) {
       return NextResponse.json(
         { error: '필수 항목을 모두 입력해주세요.' },
         { status: 400 }
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       .from('enrollments')
       .insert({
         student_id: studentId || null, // null이면 미할당
-        class_type_id: classTypeId,
+        class_id: classId,
         name,
         total_count: totalCount,
         used_count: 0,

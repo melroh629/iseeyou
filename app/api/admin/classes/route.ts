@@ -4,11 +4,11 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin'
 export async function POST(request: NextRequest) {
   try {
     const supabaseAdmin = getSupabaseAdmin()
-    const { classTypeId, date, startTime, endTime, type, maxStudents, studentId, notes } =
+    const { classId, date, startTime, endTime, type, maxStudents, studentId, notes } =
       await request.json()
 
     // 필수 필드 검증
-    if (!classTypeId || !date || !startTime || !endTime || !type) {
+    if (!classId || !date || !startTime || !endTime || !type) {
       return NextResponse.json(
         { error: '필수 항목을 모두 입력해주세요.' },
         { status: 400 }
@@ -25,9 +25,9 @@ export async function POST(request: NextRequest) {
 
     // 수업 생성
     const { data: newClass, error: classError } = await supabaseAdmin
-      .from('classes')
+      .from('schedules')
       .insert({
-        class_type_id: classTypeId,
+        class_id: classId,
         date,
         start_time: startTime,
         end_time: endTime,
@@ -50,12 +50,12 @@ export async function POST(request: NextRequest) {
 
     // 프라이빗 수업이고 학생이 선택된 경우, 자동으로 예약 생성
     if (type === 'private' && studentId) {
-      // 해당 학생의 활성 수강권 조회 (같은 class_type_id)
+      // 해당 학생의 활성 수강권 조회 (같은 class_id)
       const { data: enrollments } = await supabaseAdmin
         .from('enrollments')
         .select('id')
         .eq('student_id', studentId)
-        .eq('class_type_id', classTypeId)
+        .eq('class_id', classId)
         .eq('status', 'active')
         .gt('total_count', 0) // 남은 횟수가 있는지 확인 (used_count < total_count)
         .limit(1)

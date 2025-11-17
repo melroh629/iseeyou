@@ -15,13 +15,13 @@ import {
 import { Trash2 } from 'lucide-react'
 
 interface DeleteClassTypeDialogProps {
-  classTypeId: string
+  classId: string
   classTypeName: string
   fullWidth?: boolean
 }
 
 export function DeleteClassTypeDialog({
-  classTypeId,
+  classId,
   classTypeName,
   fullWidth = false,
 }: DeleteClassTypeDialogProps) {
@@ -33,7 +33,7 @@ export function DeleteClassTypeDialog({
     setLoading(true)
 
     try {
-      const response = await fetch(`/api/admin/class-types/${classTypeId}`, {
+      const response = await fetch(`/api/admin/class-types/${classId}`, {
         method: 'DELETE',
       })
 

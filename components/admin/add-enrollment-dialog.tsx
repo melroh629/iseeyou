@@ -56,7 +56,7 @@ export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}
   const [selectedStudents, setSelectedStudents] = useState<string[]>([])
 
   const [formData, setFormData] = useState({
-    classTypeId: '',
+    classId: '',
     name: '',
     totalCount: 10,
     validFrom: new Date().toISOString().split('T')[0],
@@ -141,7 +141,7 @@ export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}
       setIsUnassigned(true)
       setSelectedStudents([])
       setFormData({
-        classTypeId: '',
+        classId: '',
         name: '',
         totalCount: 10,
         validFrom: new Date().toISOString().split('T')[0],
@@ -265,9 +265,9 @@ export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}
                 수업 종류 <span className="text-red-500">*</span>
               </Label>
               <Select
-                value={formData.classTypeId}
+                value={formData.classId}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, classTypeId: value })
+                  setFormData({ ...formData, classId: value })
                 }
                 disabled={loading}
               >

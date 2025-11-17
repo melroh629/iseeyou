@@ -64,7 +64,7 @@ export function AddScheduleForm({ classType }: AddScheduleFormProps) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            classTypeId: classType.id,
+            classId: classType.id,
             date: format(simpleDate, 'yyyy-MM-dd'),
             startTime: simpleStartTime,
             endTime: simpleEndTime,
@@ -92,7 +92,7 @@ export function AddScheduleForm({ classType }: AddScheduleFormProps) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            classTypeId: classType.id,
+            classId: classType.id,
             specificDates,
             type: classType.type,
             maxStudents: classType.type === 'group' ? maxStudents : null,

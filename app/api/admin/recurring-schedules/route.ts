@@ -48,11 +48,11 @@ function generateDatesForPattern(
 export async function POST(request: NextRequest) {
   try {
     const supabaseAdmin = getSupabaseAdmin()
-    const { classTypeId, startDate, endDate, weeklyPattern, type, maxStudents, notes } =
+    const { classId, startDate, endDate, weeklyPattern, type, maxStudents, notes } =
       await request.json()
 
     // 필수 필드 검증
-    if (!classTypeId || !startDate || !endDate || !weeklyPattern || !type) {
+    if (!classId || !startDate || !endDate || !weeklyPattern || !type) {
       return NextResponse.json(
         { error: '필수 항목을 모두 입력해주세요.' },
         { status: 400 }
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     const { data: recurringSetting, error: recurringError } = await supabaseAdmin
       .from('recurring_schedules')
       .insert({
-        class_type_id: classTypeId,
+        class_id: classId,
         start_date: startDate,
         end_date: endDate,
         weekly_pattern: weeklyPattern,
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
 
     // 3. classes 테이블에 일괄 삽입
     const classesToInsert = scheduleDates.map((schedule) => ({
-      class_type_id: classTypeId,
+      class_id: classId,
       recurring_schedule_id: recurringSetting.id,
       date: schedule.date,
       start_time: schedule.startTime,
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
     }))
 
     const { data: classes, error: classesError } = await supabaseAdmin
-      .from('classes')
+      .from('schedules')
       .insert(classesToInsert)
       .select()
 
@@ -146,7 +146,7 @@ export async function GET(request: NextRequest) {
   try {
     const supabaseAdmin = getSupabaseAdmin()
     const { searchParams } = new URL(request.url)
-    const classTypeId = searchParams.get('classTypeId')
+    const classId = searchParams.get('classId')
 
     let query = supabaseAdmin
       .from('recurring_schedules')
@@ -163,8 +163,8 @@ export async function GET(request: NextRequest) {
       )
       .order('created_at', { ascending: false })
 
-    if (classTypeId) {
-      query = query.eq('class_type_id', classTypeId)
+    if (classId) {
+      query = query.eq('class_id', classId)
     }
 
     const { data: recurringSchedules, error } = await query

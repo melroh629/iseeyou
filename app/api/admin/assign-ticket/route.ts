@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       .from('enrollments')
       .insert({
         student_id: studentId,
-        class_type_id: template.class_type_id,
+        class_id: template.class_id,
         name: template.name,
         total_count: template.total_count,
         used_count: 0,

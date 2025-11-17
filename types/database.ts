@@ -43,7 +43,7 @@ export interface ClassTypeRow {
 // Classes Table
 export interface Class {
   id: string // UUID
-  class_type_id: string
+  class_id: string
   instructor_id: string
   date: string // DATE
   start_time: string // TIME
@@ -60,7 +60,7 @@ export interface Class {
 export interface Enrollment {
   id: string // UUID
   student_id: string
-  class_type_id: string
+  class_id: string
   name: string
   total_count: number
   used_count: number

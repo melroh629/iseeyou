@@ -6,13 +6,13 @@ import { Plus } from 'lucide-react'
 import { DeleteClassTypeDialog } from './delete-class-type-dialog'
 
 interface ClassTypeCardActionsProps {
-  classTypeId: string
+  classId: string
   classTypeName: string
   hasSchedules?: boolean
 }
 
 export function ClassTypeCardActions({
-  classTypeId,
+  classId,
   classTypeName,
   hasSchedules = true,
 }: ClassTypeCardActionsProps) {
@@ -20,7 +20,7 @@ export function ClassTypeCardActions({
     <div className="mt-4 space-y-2">
       {/* 일정이 없을 때 - 일정 추가 버튼을 강조 */}
       {!hasSchedules && (
-        <Link href={`/admin/classes/${classTypeId}/add-schedule`} className="block">
+        <Link href={`/admin/classes/${classId}/add-schedule`} className="block">
           <Button className="w-full" size="sm">
             <Plus className="mr-2 h-4 w-4" />
             일정 추가
@@ -30,18 +30,18 @@ export function ClassTypeCardActions({
 
       {/* 기존 액션 버튼들 */}
       <div className="grid grid-cols-3 gap-2">
-        <Link href={`/admin/classes/${classTypeId}`}>
+        <Link href={`/admin/classes/${classId}`}>
           <Button variant="outline" className="w-full" size="sm">
             상세보기
           </Button>
         </Link>
-        <Link href={`/admin/classes/${classTypeId}/edit`}>
+        <Link href={`/admin/classes/${classId}/edit`}>
           <Button variant="outline" className="w-full" size="sm">
             수정
           </Button>
         </Link>
         <DeleteClassTypeDialog
-          classTypeId={classTypeId}
+          classId={classId}
           classTypeName={classTypeName}
           fullWidth
         />

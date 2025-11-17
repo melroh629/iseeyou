@@ -25,7 +25,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     // 일정 수정
     const { data: updatedClass, error } = await supabaseAdmin
-      .from('classes')
+      .from('schedules')
       .update({
         date,
         start_time: startTime,
@@ -78,7 +78,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
 
     // 일정 삭제
-    const { error } = await supabaseAdmin.from('classes').delete().eq('id', params.id)
+    const { error } = await supabaseAdmin.from('schedules').delete().eq('id', params.id)
 
     if (error) {
       console.error('일정 삭제 실패:', error)

@@ -19,7 +19,7 @@ export default async function AdminDashboard() {
   ] = await Promise.all([
     // 오늘의 수업 수
     supabase
-      .from('classes')
+      .from('schedules')
       .select('*', { count: 'exact', head: true })
       .eq('date', new Date().toISOString().split('T')[0])
       .eq('status', 'scheduled'),

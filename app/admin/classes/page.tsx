@@ -29,7 +29,7 @@ export default async function ClassesPage() {
 
   // 수업 타입 조회
   const { data: classTypes, error } = await supabase
-    .from('class_types')
+    .from('schedules')
     .select('id, name, description, color, type')
     .order('created_at', { ascending: false })
 
@@ -39,13 +39,13 @@ export default async function ClassesPage() {
 
   // 모든 일정 조회 (한 번에)
   const { data: allClasses } = await supabase
-    .from('classes')
-    .select('id, class_type_id, date, type, max_students')
+    .from('schedules')
+    .select('id, class_id, date, type, max_students')
     .order('date', { ascending: true })
 
   // 각 수업의 일정 정보 계산
   const classTypesWithCounts = (classTypes || []).map((ct: any) => {
-    const schedules = (allClasses || []).filter((c: any) => c.class_type_id === ct.id)
+    const schedules = (allClasses || []).filter((c: any) => c.class_id === ct.id)
     const scheduleCount = schedules.length
     const firstSchedule = schedules[0] || null
     const lastSchedule = schedules[scheduleCount - 1] || null
@@ -148,7 +148,7 @@ export default async function ClassesPage() {
                   )}
 
                   <ClassTypeCardActions
-                    classTypeId={classType.id}
+                    classId={classType.id}
                     classTypeName={classType.name}
                     hasSchedules={hasSchedules}
                   />

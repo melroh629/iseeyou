@@ -6,7 +6,7 @@ export default async function TestPage() {
 
   // class_types 데이터 조회
   const { data: classTypes, error } = await supabase
-    .from('class_types')
+    .from('schedules')
     .select('*')
     .order('created_at', { ascending: true })
 

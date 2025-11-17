@@ -11,7 +11,7 @@ export default async function EditClassTypePage({ params }: { params: { id: stri
 
   // 수업 타입 조회
   const { data: classType, error } = await supabase
-    .from('class_types')
+    .from('schedules')
     .select('*')
     .eq('id', params.id)
     .single()
