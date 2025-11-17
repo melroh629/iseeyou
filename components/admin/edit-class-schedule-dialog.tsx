@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Edit } from 'lucide-react'
+import { addOneHour } from '@/lib/utils/time-slot'
 
 interface EditClassScheduleDialogProps {
   schedule: {
@@ -49,8 +50,23 @@ export function EditClassScheduleDialog({ schedule, onSuccess }: EditClassSchedu
   const [status, setStatus] = useState(schedule.status)
   const [notes, setNotes] = useState(schedule.notes || '')
 
+  // 시작 시간 변경 시 자동으로 종료 시간 +1시간
+  const handleStartTimeChange = (value: string) => {
+    setStartTime(value)
+    if (value) {
+      setEndTime(addOneHour(value))
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // 시간 유효성 체크
+    if (startTime >= endTime) {
+      alert('종료 시간은 시작 시간보다 늦어야 합니다.')
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -121,7 +137,7 @@ export function EditClassScheduleDialog({ schedule, onSuccess }: EditClassSchedu
                 id="startTime"
                 type="time"
                 value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
+                onChange={(e) => handleStartTimeChange(e.target.value)}
                 required
               />
             </div>

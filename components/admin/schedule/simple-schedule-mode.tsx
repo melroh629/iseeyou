@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Plus, Minus } from 'lucide-react'
+import { addOneHour } from '@/lib/utils/time-slot'
 
 interface TimeSlot {
   start_time: string
@@ -89,9 +90,25 @@ export function SimpleScheduleMode({
 
   const updateTimeSlot = (dayKey: string, index: number, field: 'start_time' | 'end_time', value: string) => {
     const currentSlots = weeklySchedule[dayKey] || []
-    const newSlots = currentSlots.map((slot, i) =>
-      i === index ? { ...slot, [field]: value } : slot
-    )
+    const newSlots = currentSlots.map((slot, i) => {
+      if (i === index) {
+        let updatedSlot = { ...slot, [field]: value }
+
+        // 시작 시간 변경 시 자동으로 종료 시간 +1시간 설정
+        if (field === 'start_time' && value) {
+          updatedSlot.end_time = addOneHour(value)
+        }
+
+        // 시작 시간 >= 종료 시간 체크
+        if (updatedSlot.start_time && updatedSlot.end_time && updatedSlot.start_time >= updatedSlot.end_time) {
+          alert('종료 시간은 시작 시간보다 늦어야 합니다.')
+          return slot // 변경 취소
+        }
+
+        return updatedSlot
+      }
+      return slot
+    })
     onWeeklyScheduleChange({
       ...weeklySchedule,
       [dayKey]: newSlots

@@ -1,5 +1,12 @@
 import { TimeSlot, SpecificDate, WeeklyPattern } from '@/lib/types/schedule'
 
+// 시작 시간에 1시간 더하기 (HH:MM 형식)
+export const addOneHour = (startTime: string): string => {
+  const [hours, minutes] = startTime.split(':').map(Number)
+  const newHours = (hours + 1) % 24 // 24시간 넘으면 0으로
+  return `${String(newHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+}
+
 // 시간대 업데이트
 export const updateTimeSlot = (
   timeSlots: TimeSlot[],
@@ -8,7 +15,20 @@ export const updateTimeSlot = (
   value: string
 ): TimeSlot[] => {
   const newSlots = [...timeSlots]
-  newSlots[index] = { ...newSlots[index], [field]: value }
+  let updatedSlot = { ...newSlots[index], [field]: value }
+
+  // 시작 시간 변경 시 자동으로 종료 시간 +1시간 설정
+  if (field === 'start_time' && value) {
+    updatedSlot.end_time = addOneHour(value)
+  }
+
+  // 시작 시간 >= 종료 시간 체크
+  if (updatedSlot.start_time && updatedSlot.end_time && updatedSlot.start_time >= updatedSlot.end_time) {
+    alert('종료 시간은 시작 시간보다 늦어야 합니다.')
+    return timeSlots // 변경 취소
+  }
+
+  newSlots[index] = updatedSlot
   return newSlots
 }
 
@@ -39,7 +59,20 @@ export const updateTimeForDate = (
   return dates.map((d) => {
     if (d.date === dateStr) {
       const newTimes = [...d.times]
-      newTimes[timeIndex] = { ...newTimes[timeIndex], [field]: value }
+      let updatedTime = { ...newTimes[timeIndex], [field]: value }
+
+      // 시작 시간 변경 시 자동으로 종료 시간 +1시간 설정
+      if (field === 'start_time' && value) {
+        updatedTime.end_time = addOneHour(value)
+      }
+
+      // 시작 시간 >= 종료 시간 체크
+      if (updatedTime.start_time && updatedTime.end_time && updatedTime.start_time >= updatedTime.end_time) {
+        alert('종료 시간은 시작 시간보다 늦어야 합니다.')
+        return d // 변경 취소
+      }
+
+      newTimes[timeIndex] = updatedTime
       return { ...d, times: newTimes }
     }
     return d
