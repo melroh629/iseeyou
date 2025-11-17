@@ -39,23 +39,24 @@
       │                      │
       ▼                      ▼
 ┌─────────────┐       ┌──────────────┐       ┌─────────────┐
-│  classes    │───────│   bookings   │───────│ enrollments │
+│  schedules  │───────│   bookings   │───────│ enrollments │
 │             │ 1   * │              │ *   1 │             │
 │ - id (PK)   │       │ - id (PK)    │       │ - id (PK)   │
-│ - date      │       │ - class_id   │       │ - student_id│
-│ - start_time│       │ - student_id │       │ - name      │
-│ - end_time  │       │ - enrollment │       │ - count     │
-└─────────────┘       └──────────────┘       └─────────────┘
-      │                                              │
-      │                                              │
-      ▼                                              ▼
-┌──────────────┐                            ┌──────────────┐
-│ class_types  │────────────────────────────│ class_types  │
-│              │                            │              │
-│ - id (PK)    │                            │ - id (PK)    │
-│ - name       │                            │ - name       │
-│ - type       │                            │ - type       │
-└──────────────┘                            └──────────────┘
+│ - date      │       │ - schedule_id│       │ - student_id│
+│ - start_time│       │ - student_id │       │ - class_id  │
+│ - end_time  │       │ - enrollment │       │ - name      │
+└─────────────┘       └──────────────┘       │ - count     │
+      │                                       └─────────────┘
+      │ class_id                                     │
+      ▼                                              │ class_id
+┌──────────────┐                                     │
+│   classes    │─────────────────────────────────────┘
+│              │
+│ - id (PK)    │
+│ - name       │
+│ - type       │
+│ - color      │
+└──────────────┘
 ```
 
 ---
@@ -97,7 +98,7 @@
 
 ---
 
-### 3. class_types
+### 3. classes
 수업 종류 (캐니크로스, 컨디셔닝 등)
 
 | 컬럼명 | 타입 | 제약조건 | 설명 |
@@ -105,6 +106,7 @@
 | id | UUID | PRIMARY KEY | 수업 종류 ID |
 | name | TEXT | NOT NULL | 수업명 (예: 캐니크로스) |
 | description | TEXT | NULL | 수업 설명 |
+| color | TEXT | NULL | 수업 색상 (UI용) |
 | type | TEXT | NOT NULL, CHECK | 수업 타입 (private/group) |
 | default_max_students | INTEGER | DEFAULT 6 | 기본 최대 인원 |
 | default_cancel_hours | INTEGER | DEFAULT 24 | 기본 취소 가능 시간 |
@@ -118,28 +120,31 @@
 
 ---
 
-### 4. classes
-수업 일정
+### 4. schedules
+수업 일정 (특정 날짜와 시간의 수업)
 
 | 컬럼명 | 타입 | 제약조건 | 설명 |
 |--------|------|----------|------|
-| id | UUID | PRIMARY KEY | 수업 ID |
-| class_type_id | UUID | FOREIGN KEY → class_types(id) | 수업 종류 |
+| id | UUID | PRIMARY KEY | 일정 ID |
+| class_id | UUID | FOREIGN KEY → classes(id) | 수업 종류 |
+| recurring_schedule_id | UUID | FOREIGN KEY → recurring_schedules(id) | 반복 일정 참조 (NULL 가능) |
 | instructor_id | UUID | FOREIGN KEY → users(id) | 강사 ID |
 | date | DATE | NOT NULL | 수업 날짜 |
 | start_time | TIME | NOT NULL | 시작 시간 |
 | end_time | TIME | NOT NULL | 종료 시간 |
 | location_name | TEXT | NULL | 장소명 |
 | location_address | TEXT | NULL | 도로명 주소 |
-| max_students | INTEGER | NOT NULL | 최대 인원 |
-| cancel_hours_before | INTEGER | NOT NULL | 취소 가능 시간 (시간 단위) |
+| type | VARCHAR | NOT NULL | 수업 타입 (private/group) |
+| max_students | INTEGER | NULL | 최대 인원 (group만 해당) |
+| cancel_hours_before | INTEGER | NULL | 취소 가능 시간 (시간 단위) |
 | status | TEXT | NOT NULL, CHECK | 상태 |
+| notes | TEXT | NULL | 메모 |
 | created_at | TIMESTAMP | DEFAULT NOW() | 생성일시 |
 
 **인덱스:**
 - PRIMARY KEY on `id`
 - INDEX on `date`
-- INDEX on `class_type_id`
+- INDEX on `class_id`
 
 **Enum 값:**
 - `status`: 'scheduled', 'cancelled', 'completed'
@@ -153,7 +158,7 @@
 |--------|------|----------|------|
 | id | UUID | PRIMARY KEY | 수강권 ID |
 | student_id | UUID | FOREIGN KEY → students(id) | 수강생 ID |
-| class_type_id | UUID | FOREIGN KEY → class_types(id) | 수업 종류 |
+| class_id | UUID | FOREIGN KEY → classes(id) | 수업 종류 |
 | name | TEXT | NOT NULL | 수강권 이름 |
 | total_count | INTEGER | NOT NULL | 총 이용 횟수 |
 | used_count | INTEGER | DEFAULT 0 | 사용한 횟수 |
@@ -182,7 +187,7 @@
 | 컬럼명 | 타입 | 제약조건 | 설명 |
 |--------|------|----------|------|
 | id | UUID | PRIMARY KEY | 예약 ID |
-| class_id | UUID | FOREIGN KEY → classes(id) | 수업 ID |
+| schedule_id | UUID | FOREIGN KEY → schedules(id) | 수업 일정 ID |
 | enrollment_id | UUID | FOREIGN KEY → enrollments(id) | 사용한 수강권 |
 | student_id | UUID | FOREIGN KEY → students(id) | 수강생 ID |
 | status | TEXT | NOT NULL, CHECK | 예약 상태 |
@@ -192,7 +197,7 @@
 **인덱스:**
 - PRIMARY KEY on `id`
 - INDEX on `student_id`
-- INDEX on `class_id`
+- INDEX on `schedule_id`
 
 **Enum 값:**
 - `status`: 'confirmed', 'cancelled', 'completed'
@@ -200,7 +205,7 @@
 **비즈니스 로직:**
 - 예약 생성 시 `enrollment.used_count` +1
 - 예약 취소 시 `enrollment.used_count` -1
-- 취소 가능 시간은 `classes.cancel_hours_before` 기준
+- 취소 가능 시간은 `schedules.cancel_hours_before` 기준
 
 ---
 
@@ -210,16 +215,16 @@
 - 한 명의 사용자(user)는 하나의 수강생(student) 정보를 가질 수 있음
 - `role`이 'student'인 경우에만 students 테이블에 레코드 존재
 
-### 2. users ↔ classes (1:N) - 강사
-- 한 명의 강사(user)는 여러 수업(classes)을 담당할 수 있음
+### 2. users ↔ schedules (1:N) - 강사
+- 한 명의 강사(user)는 여러 수업 일정(schedules)을 담당할 수 있음
 - `role`이 'admin'인 경우 강사로 지정 가능
 
-### 3. class_types ↔ classes (1:N)
-- 하나의 수업 종류(class_types)는 여러 수업 일정(classes)을 가질 수 있음
-- 예: "캐니크로스" 수업 종류 → 11/10, 11/13, 11/17 수업 일정
+### 3. classes ↔ schedules (1:N)
+- 하나의 수업(classes)은 여러 수업 일정(schedules)을 가질 수 있음
+- 예: "캐니크로스" 수업 → 11/10, 11/13, 11/17 수업 일정
 
-### 4. class_types ↔ enrollments (1:N)
-- 하나의 수업 종류는 여러 수강권으로 판매될 수 있음
+### 4. classes ↔ enrollments (1:N)
+- 하나의 수업은 여러 수강권으로 판매될 수 있음
 - 예: "캐니크로스 6회권", "캐니크로스 10회권"
 
 ### 5. students ↔ enrollments (1:N)
@@ -229,9 +234,9 @@
 ### 6. students ↔ bookings (1:N)
 - 한 명의 수강생은 여러 예약을 할 수 있음
 
-### 7. classes ↔ bookings (1:N)
-- 하나의 수업에 여러 예약이 있을 수 있음
-- 최대 `classes.max_students`까지 예약 가능
+### 7. schedules ↔ bookings (1:N)
+- 하나의 수업 일정에 여러 예약이 있을 수 있음
+- 최대 `schedules.max_students`까지 예약 가능
 
 ### 8. enrollments ↔ bookings (1:N)
 - 하나의 수강권으로 여러 번 예약 가능
@@ -265,8 +270,8 @@
 - **students**: 본인 정보만 조회/수정 가능
 - **enrollments**: 본인 수강권만 조회 가능
 - **bookings**: 본인 예약만 조회/생성/취소 가능
+- **schedules**: 모두 조회 가능, 관리자만 생성/수정/삭제
 - **classes**: 모두 조회 가능, 관리자만 생성/수정/삭제
-- **class_types**: 모두 조회 가능, 관리자만 생성/수정/삭제
 
 ---
 
@@ -275,9 +280,11 @@
 | 버전 | 날짜 | 설명 |
 |------|------|------|
 | v1.0 | 2025-11-10 | 초기 스키마 생성 (핵심 기능) |
+| v1.1 | 2025-11-17 | 테이블 및 컬럼 리네이밍 (class_types→classes, classes→schedules, class_type_id→class_id, class_id→schedule_id) |
 
 ---
 
-**작성일:** 2025-11-10  
-**작성자:** ISeeYou 개발팀  
+**작성일:** 2025-11-10
+**최종 수정일:** 2025-11-17
+**작성자:** ISeeYou 개발팀
 **프로젝트:** 강아지 훈련 수업 예약 시스템
