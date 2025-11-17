@@ -1,12 +1,10 @@
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, Clock, Users, Edit } from "lucide-react";
-import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
 import { notFound } from "next/navigation";
-import { DeleteClassTypeDialog } from "@/components/admin/delete-class-type-dialog";
-import { ScheduleStatusBadge } from "@/components/schedule-status-badge";
-import { getScheduleDisplayStatus } from "@/lib/constants/schedule-status";
+import { ClassDetailHeader } from "@/components/admin/class-detail-header";
+import { ClassInfoCard } from "@/components/admin/class-info-card";
+import { ScheduleDateHeader } from "@/components/schedule-date-header";
+import { ScheduleCard } from "@/components/schedule-card";
 
 // 캐싱 비활성화
 export const dynamic = "force-dynamic";
@@ -125,81 +123,19 @@ export default async function ClassDetailPage({
   return (
     <div className="max-w-6xl mx-auto space-y-6 px-4 sm:px-6">
       {/* 헤더 */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-        <Link href="/admin/classes">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            {classDetail.color && (
-              <div
-                className="w-4 h-4 rounded-full"
-                style={{ backgroundColor: classDetail.color }}
-              />
-            )}
-            <h1 className="text-2xl sm:text-3xl font-bold">
-              {classDetail.name}
-            </h1>
-          </div>
-          {classDetail.description && (
-            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-              {classDetail.description}
-            </p>
-          )}
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <Link
-            href={`/admin/classes/${params.id}/edit`}
-            className="w-full sm:w-auto"
-          >
-            <Button className="w-full">
-              <Edit className="mr-2 h-4 w-4" />
-              수업 관리
-            </Button>
-          </Link>
-          <DeleteClassTypeDialog
-            classId={params.id}
-            classTypeName={classDetail.name}
-          />
-        </div>
-      </div>
+      <ClassDetailHeader
+        classId={params.id}
+        className={classDetail.name}
+        classDescription={classDetail.description}
+        classColor={classDetail.color}
+      />
 
       {/* 수업 정보 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>수업 정보</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <p className="text-sm text-muted-foreground">총 일정 수</p>
-            <p className="text-2xl font-bold">{classList.length}개</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">예약 취소 기한</p>
-            <p className="text-2xl font-bold">
-              {classDetail.default_cancel_hours}시간 전
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">상태</p>
-            <p className="text-2xl font-bold">
-              {
-                classList.filter((s) => {
-                  const displayStatus = getScheduleDisplayStatus(
-                    s.status,
-                    s.date,
-                    s.end_time
-                  );
-                  return displayStatus === "scheduled";
-                }).length
-              }
-              개 예정
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <ClassInfoCard
+        totalSchedules={classList.length}
+        cancelHours={classDetail.default_cancel_hours}
+        schedules={classList}
+      />
 
       {/* 일정 목록 */}
       <div className="space-y-4">
@@ -218,90 +154,16 @@ export default async function ClassDetailPage({
           </Card>
         ) : (
           <div className="space-y-6">
-            {Object.entries(groupedSchedules).map(([date, schedules]) => {
-              const dateObj = new Date(date);
-              return (
-                <div key={date}>
-                  <div className="pb-3 mb-2">
-                    <div className="flex items-center gap-2 pt-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <h3 className="text-base font-medium text-muted-foreground">
-                        {dateObj.toLocaleDateString("ko-KR", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                          weekday: "long",
-                        })}
-                      </h3>
-                    </div>
-                  </div>
-
-                  {/* Material Design 스타일 카드 리스트 */}
-                  <div className="space-y-2">
-                    {schedules.map((schedule) => {
-                      const confirmedBookings = schedule.bookings.filter(
-                        (b) => b.status === "confirmed"
-                      ).length;
-
-                      return (
-                        <div
-                          key={schedule.id}
-                          className="bg-card rounded-lg shadow-sm p-4"
-                        >
-                          {/* 시간 & 정보 */}
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
-                            {/* 시간 */}
-                            <div className="flex items-center gap-2 sm:min-w-[140px]">
-                              <Clock className="h-4 w-4 text-muted-foreground" />
-                              <span className="font-semibold text-sm sm:text-base">
-                                {schedule.start_time.substring(0, 5)} ~{" "}
-                                {schedule.end_time.substring(0, 5)}
-                              </span>
-                            </div>
-
-                            {/* 타입 */}
-                            <span
-                              className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full ${
-                                schedule.type === "group"
-                                  ? "bg-blue-50 text-blue-700"
-                                  : "bg-purple-50 text-purple-700"
-                              }`}
-                            >
-                              {schedule.type === "group" ? "그룹" : "프라이빗"}
-                            </span>
-
-                            {/* 예약 인원 */}
-                            {schedule.type === "group" &&
-                            schedule.max_students ? (
-                              <div className="flex items-center gap-2 text-sm">
-                                <Users className="h-4 w-4 text-muted-foreground" />
-                                <span className="font-medium">
-                                  {confirmedBookings} / {schedule.max_students}
-                                </span>
-                              </div>
-                            ) : null}
-
-                            {/* 상태 */}
-                            <ScheduleStatusBadge
-                              dbStatus={schedule.status}
-                              date={schedule.date}
-                              endTime={schedule.end_time}
-                            />
-
-                            {/* 메모 */}
-                            {schedule.notes && (
-                              <p className="text-sm text-muted-foreground">
-                                {schedule.notes}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+            {Object.entries(groupedSchedules).map(([date, schedules]) => (
+              <div key={date}>
+                <ScheduleDateHeader date={date} />
+                <div className="space-y-2">
+                  {schedules.map((schedule) => (
+                    <ScheduleCard key={schedule.id} schedule={schedule} />
+                  ))}
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
       </div>
