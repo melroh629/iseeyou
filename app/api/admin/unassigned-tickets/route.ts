@@ -54,12 +54,15 @@ export async function GET() {
     const enrichedEnrollments = (enrollments || []).map((enrollment) => {
       const students = (enrollmentStudents || [])
         .filter((es) => es.enrollment_id === enrollment.id)
-        .filter((es) => es.students) // students가 null이 아닌 것만
-        .map((es) => ({
-          id: es.students.id,
-          used_count: es.used_count,
-          users: es.students.users,
-        }))
+        .filter((es) => es.students && !Array.isArray(es.students)) // students가 null이 아니고 배열이 아닌 것만
+        .map((es) => {
+          const student = es.students as any
+          return {
+            id: student.id,
+            used_count: es.used_count,
+            users: student.users,
+          }
+        })
 
       // 총 사용 횟수 계산 (모든 학생의 used_count 합)
       const total_used_count = students.reduce((sum, s) => sum + s.used_count, 0)

@@ -70,7 +70,7 @@ export default function EnrollmentDetailPage() {
       setEnrollment(found || null)
 
       if (found) {
-        setSelectedStudents(found.students?.map((s) => s.id) || [])
+        setSelectedStudents(found.students?.map((s: EnrollmentStudent) => s.id) || [])
       }
 
       // 전체 학생 목록 조회

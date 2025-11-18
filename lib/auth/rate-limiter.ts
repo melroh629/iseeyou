@@ -77,7 +77,7 @@ class RateLimiter {
    */
   private cleanup(): void {
     const now = Date.now()
-    for (const [key, entry] of this.attempts.entries()) {
+    for (const [key, entry] of Array.from(this.attempts.entries())) {
       if (now > entry.resetAt) {
         this.attempts.delete(key)
       }
