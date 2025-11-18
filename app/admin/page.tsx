@@ -1,7 +1,8 @@
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { getCurrentUserFromServer } from "@/lib/auth/user";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, Users, Ticket } from "lucide-react";
+import { CalendarDays, Users, Ticket, Settings } from "lucide-react";
+import { redirect } from "next/navigation";
 
 // 캐싱 비활성화 - 항상 최신 데이터 표시
 export const dynamic = "force-dynamic";
@@ -9,6 +10,12 @@ export const revalidate = 0;
 
 export default async function AdminDashboard() {
   const user = await getCurrentUserFromServer();
+
+  // 로그인 안되어있거나 관리자가 아니면 메인으로 리다이렉트
+  if (!user || user.role !== 'admin') {
+    redirect('/');
+  }
+
   const supabase = getSupabaseAdmin();
 
   // 통계 데이터 조회
@@ -105,6 +112,13 @@ export default async function AdminDashboard() {
           >
             <Ticket className="h-8 w-8 mb-2 text-primary" />
             <span className="font-medium">수강권 발급</span>
+          </a>
+          <a
+            href="/admin/settings"
+            className="flex flex-col items-center justify-center p-6 border rounded-lg hover:bg-accent transition-colors"
+          >
+            <Settings className="h-8 w-8 mb-2 text-primary" />
+            <span className="font-medium">설정</span>
           </a>
         </CardContent>
       </Card>
