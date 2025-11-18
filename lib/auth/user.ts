@@ -1,33 +1,42 @@
-import { createClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
+import { verify } from 'jsonwebtoken'
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import type { User } from '@/types/database'
+
+const JWT_SECRET = process.env.JWT_SECRET!
 
 /**
  * 서버에서 현재 로그인한 사용자 정보 가져오기
  */
 export async function getCurrentUserFromServer() {
-  const supabase = await createClient()
+  try {
+    const cookieStore = await cookies()
+    const token = cookieStore.get('token')?.value
 
-  const {
-    data: { user: authUser },
-    error: authError,
-  } = await supabase.auth.getUser()
+    if (!token) {
+      return null
+    }
 
-  if (authError || !authUser) {
+    // JWT 토큰 검증
+    const decoded = verify(token, JWT_SECRET) as { userId: string; role: string }
+
+    // users 테이블에서 사용자 정보 가져오기
+    const supabase = getSupabaseAdmin()
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', decoded.userId)
+      .single()
+
+    if (userError || !user) {
+      return null
+    }
+
+    return user as User
+  } catch (error) {
+    console.error('getCurrentUserFromServer error:', error)
     return null
   }
-
-  // users 테이블에서 추가 정보 가져오기
-  const { data: user, error: userError } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', authUser.id)
-    .single()
-
-  if (userError || !user) {
-    return null
-  }
-
-  return user as User
 }
 
 /**
