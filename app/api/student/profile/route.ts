@@ -1,11 +1,30 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
+import { verifyToken } from '@/lib/auth/jwt'
 
-export async function GET() {
+export const dynamic = 'force-dynamic'
+
+export async function GET(request: NextRequest) {
   try {
+    // JWT 토큰에서 사용자 정보 가져오기
+    const token = request.cookies.get('token')?.value
+    if (!token) {
+      return NextResponse.json(
+        { error: '인증이 필요합니다.' },
+        { status: 401 }
+      )
+    }
+
+    const user = await verifyToken(token)
+    if (!user || user.role !== 'student') {
+      return NextResponse.json(
+        { error: '학생 권한이 필요합니다.' },
+        { status: 403 }
+      )
+    }
+
     const supabaseAdmin = getSupabaseAdmin()
 
-    // TODO: 실제로는 JWT에서 student_id를 가져와야 함
     const { data: student, error } = await supabaseAdmin
       .from('students')
       .select(`
@@ -19,7 +38,7 @@ export async function GET() {
           phone
         )
       `)
-      .limit(1)
+      .eq('user_id', user.userId)
       .single()
 
     if (error || !student) {
@@ -39,17 +58,33 @@ export async function GET() {
   }
 }
 
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
   try {
+    // JWT 토큰에서 사용자 정보 가져오기
+    const token = request.cookies.get('token')?.value
+    if (!token) {
+      return NextResponse.json(
+        { error: '인증이 필요합니다.' },
+        { status: 401 }
+      )
+    }
+
+    const user = await verifyToken(token)
+    if (!user || user.role !== 'student') {
+      return NextResponse.json(
+        { error: '학생 권한이 필요합니다.' },
+        { status: 403 }
+      )
+    }
+
     const supabaseAdmin = getSupabaseAdmin()
     const body = await request.json()
     const { dogName, notes, dogPhoto } = body
 
-    // TODO: 실제로는 JWT에서 student_id를 가져와야 함
     const { data: student } = await supabaseAdmin
       .from('students')
       .select('id')
-      .limit(1)
+      .eq('user_id', user.userId)
       .single()
 
     if (!student) {

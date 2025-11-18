@@ -1,27 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
+import { verifyToken } from '@/lib/auth/jwt'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
+    // JWT 토큰에서 사용자 정보 가져오기
+    const token = request.cookies.get('token')?.value
+    if (!token) {
+      return NextResponse.json(
+        { error: '인증이 필요합니다.' },
+        { status: 401 }
+      )
+    }
+
+    const user = await verifyToken(token)
+    if (!user || user.role !== 'student') {
+      return NextResponse.json(
+        { error: '학생 권한이 필요합니다.' },
+        { status: 403 }
+      )
+    }
+
     const supabaseAdmin = getSupabaseAdmin()
     const searchParams = request.nextUrl.searchParams
     const year = searchParams.get('year')
     const month = searchParams.get('month')
 
-    // TODO: 실제로는 JWT에서 student_id를 가져와야 함
-    const { data: students } = await supabaseAdmin
+    const { data: student } = await supabaseAdmin
       .from('students')
       .select('id')
-      .limit(1)
+      .eq('user_id', user.userId)
       .single()
 
-    if (!students) {
+    if (!student) {
       return NextResponse.json({ bookings: [] })
     }
 
-    const studentId = students.id
+    const studentId = student.id
 
     if (!year || !month) {
       return NextResponse.json(

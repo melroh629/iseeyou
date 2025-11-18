@@ -1,44 +1,63 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
+import { verifyToken } from '@/lib/auth/jwt'
 
-export async function GET() {
+export const dynamic = 'force-dynamic'
+
+export async function GET(request: NextRequest) {
   try {
+    // JWT 토큰에서 사용자 정보 가져오기
+    const token = request.cookies.get('token')?.value
+    if (!token) {
+      return NextResponse.json(
+        { error: '인증이 필요합니다.' },
+        { status: 401 }
+      )
+    }
+
+    const user = await verifyToken(token)
+    if (!user || user.role !== 'student') {
+      return NextResponse.json(
+        { error: '학생 권한이 필요합니다.' },
+        { status: 403 }
+      )
+    }
+
     const supabaseAdmin = getSupabaseAdmin()
 
-    // TODO: 실제로는 JWT에서 student_id를 가져와야 함
-    // 임시로 첫 번째 학생 사용
-    const { data: students } = await supabaseAdmin
+    // user.userId로 student 찾기
+    const { data: student } = await supabaseAdmin
       .from('students')
       .select('id')
-      .limit(1)
+      .eq('user_id', user.userId)
       .single()
 
-    if (!students) {
+    if (!student) {
       return NextResponse.json({ tickets: [] })
     }
 
-    const studentId = students.id
-
-    // 학생의 수강권 목록 조회 (활성 수강권만)
-    const { data: enrollments, error } = await supabaseAdmin
-      .from('enrollments')
+    // enrollment_students를 통해 학생의 수강권 조회
+    const { data: enrollmentStudents, error } = await supabaseAdmin
+      .from('enrollment_students')
       .select(`
-        id,
-        name,
-        total_count,
         used_count,
-        valid_from,
-        valid_until,
-        status,
-        classes (
+        enrollments (
           id,
           name,
-          color
+          total_count,
+          valid_from,
+          valid_until,
+          status,
+          classes (
+            id,
+            name,
+            color
+          )
         )
       `)
-      .eq('student_id', studentId)
-      .order('status', { ascending: true })
-      .order('valid_until', { ascending: false })
+      .eq('student_id', student.id)
+      .order('enrollments(status)', { ascending: true })
+      .order('enrollments(valid_until)', { ascending: false })
 
     if (error) {
       console.error('수강권 조회 실패:', error)
@@ -48,7 +67,13 @@ export async function GET() {
       )
     }
 
-    return NextResponse.json({ tickets: enrollments || [] })
+    // enrollment_students의 데이터를 프론트엔드 형식에 맞게 변환
+    const tickets = (enrollmentStudents || []).map((es: any) => ({
+      ...es.enrollments,
+      used_count: es.used_count, // 개별 학생의 used_count
+    }))
+
+    return NextResponse.json({ tickets })
   } catch (error: any) {
     console.error('수강권 조회 에러:', error)
     return NextResponse.json(
