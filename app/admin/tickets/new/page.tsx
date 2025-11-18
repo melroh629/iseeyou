@@ -128,44 +128,25 @@ export default function NewTicketPage() {
         bookingEndHoursBefore: formData.bookingEndHoursBefore,
       }
 
+      // 수강권 1개 생성 + 선택된 학생들 연결
+      const response = await fetch('/api/admin/enrollments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...enrollmentData,
+          studentIds: selectedStudents, // 배열로 전달
+        }),
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || '수강권 생성에 실패했습니다.')
+      }
+
       if (selectedStudents.length === 0) {
-        // 학생 선택 안함 → 미할당 수강권 생성
-        const response = await fetch('/api/admin/enrollments', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ...enrollmentData,
-            studentId: null,
-          }),
-        })
-
-        const data = await response.json()
-        if (!response.ok) {
-          throw new Error(data.error || '수강권 생성에 실패했습니다.')
-        }
-
         alert('수강권이 생성되었습니다. (미할당)')
       } else {
-        // 학생 선택함 → 선택한 학생들에게 발급
-        const promises = selectedStudents.map((studentId) =>
-          fetch('/api/admin/enrollments', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              ...enrollmentData,
-              studentId,
-            }),
-          })
-        )
-
-        const results = await Promise.all(promises)
-        const failed = results.filter((r) => !r.ok)
-
-        if (failed.length > 0) {
-          throw new Error(`${failed.length}명의 학생에게 발급 실패했습니다.`)
-        }
-
-        alert(`${selectedStudents.length}명에게 수강권이 발급되었습니다.`)
+        alert(`수강권이 생성되었습니다. (${selectedStudents.length}명 등록)`)
       }
 
       router.push('/admin/tickets')

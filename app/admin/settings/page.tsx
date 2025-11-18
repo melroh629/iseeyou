@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { Lock, UserPlus } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
@@ -112,9 +113,8 @@ export default function AdminSettingsPage() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="currentPassword">현재 비밀번호</Label>
-            <Input
+            <PasswordInput
               id="currentPassword"
-              type="password"
               value={passwordForm.currentPassword}
               onChange={(e) =>
                 setPasswordForm({ ...passwordForm, currentPassword: e.target.value })
@@ -126,9 +126,8 @@ export default function AdminSettingsPage() {
 
           <div className="space-y-2">
             <Label htmlFor="newPassword">새 비밀번호</Label>
-            <Input
+            <PasswordInput
               id="newPassword"
-              type="password"
               value={passwordForm.newPassword}
               onChange={(e) =>
                 setPasswordForm({ ...passwordForm, newPassword: e.target.value })
@@ -140,9 +139,8 @@ export default function AdminSettingsPage() {
 
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">새 비밀번호 확인</Label>
-            <Input
+            <PasswordInput
               id="confirmPassword"
-              type="password"
               value={passwordForm.confirmPassword}
               onChange={(e) =>
                 setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })

@@ -7,8 +7,16 @@ export async function PUT(
 ) {
   try {
     const supabaseAdmin = getSupabaseAdmin()
-    const { name, totalCount, usedCount, validFrom, validUntil, price, status } =
-      await request.json()
+    const {
+      name,
+      totalCount,
+      validFrom,
+      validUntil,
+      price,
+      status,
+      studentIds, // 새로 추가: 학생 목록 업데이트
+      studentUsedCounts, // 새로 추가: 학생별 사용 횟수 { studentId: usedCount }
+    } = await request.json()
 
     // 필수 필드 검증
     if (!name || !totalCount || totalCount < 1 || !validFrom || !validUntil || !status) {
@@ -18,21 +26,12 @@ export async function PUT(
       )
     }
 
-    // 사용 횟수 검증
-    if (usedCount < 0 || usedCount > totalCount) {
-      return NextResponse.json(
-        { error: '사용 횟수는 0 이상 총 횟수 이하여야 합니다.' },
-        { status: 400 }
-      )
-    }
-
-    // 수강권 수정
+    // 1. 수강권 기본 정보 수정
     const { data: updatedEnrollment, error } = await supabaseAdmin
       .from('enrollments')
       .update({
         name,
         total_count: totalCount,
-        used_count: usedCount,
         valid_from: validFrom,
         valid_until: validUntil,
         price: price || null,
@@ -48,6 +47,49 @@ export async function PUT(
         { error: '수강권 수정에 실패했습니다.' },
         { status: 500 }
       )
+    }
+
+    // 2. 학생 목록 업데이트 (studentIds가 제공된 경우)
+    if (studentIds !== undefined && Array.isArray(studentIds)) {
+      // 2-1. 기존 학생 목록 조회
+      const { data: existingStudents } = await supabaseAdmin
+        .from('enrollment_students')
+        .select('student_id, used_count')
+        .eq('enrollment_id', params.id)
+
+      const existingStudentIds = (existingStudents || []).map((es) => es.student_id)
+
+      // 2-2. 제거할 학생 (existingStudentIds - studentIds)
+      const toRemove = existingStudentIds.filter((id) => !studentIds.includes(id))
+      if (toRemove.length > 0) {
+        await supabaseAdmin
+          .from('enrollment_students')
+          .delete()
+          .eq('enrollment_id', params.id)
+          .in('student_id', toRemove)
+      }
+
+      // 2-3. 추가할 학생 (studentIds - existingStudentIds)
+      const toAdd = studentIds.filter((id) => !existingStudentIds.includes(id))
+      if (toAdd.length > 0) {
+        const newStudents = toAdd.map((studentId) => ({
+          enrollment_id: params.id,
+          student_id: studentId,
+          used_count: 0,
+        }))
+        await supabaseAdmin.from('enrollment_students').insert(newStudents)
+      }
+    }
+
+    // 3. 학생별 사용 횟수 업데이트 (studentUsedCounts가 제공된 경우)
+    if (studentUsedCounts && typeof studentUsedCounts === 'object') {
+      for (const [studentId, usedCount] of Object.entries(studentUsedCounts)) {
+        await supabaseAdmin
+          .from('enrollment_students')
+          .update({ used_count: usedCount as number })
+          .eq('enrollment_id', params.id)
+          .eq('student_id', studentId)
+      }
     }
 
     return NextResponse.json({

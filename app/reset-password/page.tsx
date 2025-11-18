@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { formatPhoneNumber, normalizePhoneNumber } from '@/lib/utils/phone'
@@ -186,9 +187,8 @@ export default function ResetPasswordPage() {
                 <div className="pt-4 border-t space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="newPassword">새 비밀번호</Label>
-                    <Input
+                    <PasswordInput
                       id="newPassword"
-                      type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="8자 이상, 영문+숫자 포함"
@@ -199,9 +199,8 @@ export default function ResetPasswordPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword">비밀번호 확인</Label>
-                    <Input
+                    <PasswordInput
                       id="confirmPassword"
-                      type="password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="비밀번호를 다시 입력하세요"

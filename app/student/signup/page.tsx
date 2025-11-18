@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { UserPlus, Dog } from 'lucide-react'
 import Link from 'next/link'
@@ -159,9 +160,8 @@ export default function StudentSignupPage() {
               <div className="pt-4 border-t space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="password">비밀번호 *</Label>
-                  <Input
+                  <PasswordInput
                     id="password"
-                    type="password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     placeholder="8자 이상, 영문+숫자 포함"
@@ -171,9 +171,8 @@ export default function StudentSignupPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword">비밀번호 확인 *</Label>
-                  <Input
+                  <PasswordInput
                     id="confirmPassword"
-                    type="password"
                     value={formData.confirmPassword}
                     onChange={(e) =>
                       setFormData({ ...formData, confirmPassword: e.target.value })

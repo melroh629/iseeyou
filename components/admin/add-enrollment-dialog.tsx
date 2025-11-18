@@ -1,3 +1,9 @@
+/**
+ * ⚠️ 용어 정리:
+ * - "템플릿" 용어 절대 사용 금지!
+ * - 사용자에게는 "수강권" 으로만 표현
+ * - DB: enrollment (개인 발급), enrollment_template (재사용 가능한 수강권)
+ */
 'use client'
 
 import { useState, useEffect } from 'react'

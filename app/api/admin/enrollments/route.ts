@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
   try {
     const supabaseAdmin = getSupabaseAdmin()
     const {
-      studentId,
+      studentIds, // 배열로 변경! (여러 학생 지원)
       classId,
       name,
       totalCount,
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       bookingEndHoursBefore,
     } = await request.json()
 
-    // 필수 필드 검증 (studentId는 선택사항 - null이면 미할당 수강권)
+    // 필수 필드 검증
     if (!classId || !name || !totalCount || !validFrom || !validUntil) {
       return NextResponse.json(
         { error: '필수 항목을 모두 입력해주세요.' },
@@ -40,15 +40,13 @@ export async function POST(request: NextRequest) {
       end_hours_before: bookingEndHoursBefore || 2,
     }
 
-    // 수강권 생성 (미할당 또는 직접 발급)
+    // 1. 수강권 생성 (student 정보 없음)
     const { data: newEnrollment, error } = await supabaseAdmin
       .from('enrollments')
       .insert({
-        student_id: studentId || null, // null이면 미할당
         class_id: classId,
         name,
         total_count: totalCount,
-        used_count: 0,
         valid_from: validFrom,
         valid_until: validUntil,
         price: price || null,
@@ -74,6 +72,29 @@ export async function POST(request: NextRequest) {
         { error: '수강권 생성에 실패했습니다.' },
         { status: 500 }
       )
+    }
+
+    // 2. 학생들을 enrollment_students에 연결 (studentIds가 있으면)
+    if (studentIds && Array.isArray(studentIds) && studentIds.length > 0) {
+      const enrollmentStudents = studentIds.map((studentId) => ({
+        enrollment_id: newEnrollment.id,
+        student_id: studentId,
+        used_count: 0,
+      }))
+
+      const { error: linkError } = await supabaseAdmin
+        .from('enrollment_students')
+        .insert(enrollmentStudents)
+
+      if (linkError) {
+        console.error('학생 연결 실패:', linkError)
+        // 수강권은 생성됐지만 학생 연결 실패 - 롤백 고려
+        await supabaseAdmin.from('enrollments').delete().eq('id', newEnrollment.id)
+        return NextResponse.json(
+          { error: '학생 연결에 실패했습니다.' },
+          { status: 500 }
+        )
+      }
     }
 
     return NextResponse.json({
