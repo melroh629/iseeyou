@@ -1,11 +1,326 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Calendar } from '@/components/ui/calendar'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Clock, Users, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
+
+interface Booking {
+  id: string
+  status: string
+  booked_at: string
+  cancelled_at: string | null
+  schedules: {
+    id: string
+    date: string
+    start_time: string
+    end_time: string
+    type: string
+    max_students: number | null
+    classes: {
+      id: string
+      name: string
+      color: string | null
+    }
+  }
+  enrollments: {
+    id: string
+    name: string
+  }
+}
+
+interface Enrollment {
+  id: string
+  name: string
+  classes: {
+    id: string
+    name: string
+  }
+}
+
 export default function MyClassesPage() {
+  const { toast } = useToast()
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [selectedFilter, setSelectedFilter] = useState<string>('all')
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([])
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchEnrollments()
+  }, [])
+
+  useEffect(() => {
+    if (selectedDate) {
+      fetchBookings()
+    }
+  }, [selectedDate])
+
+  const fetchEnrollments = async () => {
+    try {
+      const res = await fetch('/api/student/my-tickets')
+      const data = await res.json()
+      setEnrollments(data.tickets || [])
+    } catch (error) {
+      console.error('수강권 조회 실패:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchBookings = async () => {
+    const year = selectedDate.getFullYear()
+    const month = selectedDate.getMonth() + 1
+
+    try {
+      const params = new URLSearchParams({
+        year: year.toString(),
+        month: month.toString(),
+      })
+
+      const res = await fetch(`/api/student/my-bookings?${params}`)
+      const data = await res.json()
+      setBookings(data.bookings || [])
+    } catch (error) {
+      console.error('예약 내역 조회 실패:', error)
+    }
+  }
+
+  const handleCancelBooking = async (bookingId: string) => {
+    // TODO: 예약 취소 API 호출
+    toast({
+      title: '예약 취소 완료',
+      description: '수업 예약이 취소되었습니다.',
+    })
+  }
+
+  // 수업이 있는 날짜들
+  const datesWithBookings = bookings.map((b) => new Date(b.schedules.date))
+
+  // 필터링된 예약 목록
+  const filteredBookings =
+    selectedFilter === 'all'
+      ? bookings
+      : bookings.filter((b) => b.enrollments.id === selectedFilter)
+
+  // 상태별 배지 설정
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'confirmed':
+        return (
+          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+            출석완료
+          </Badge>
+        )
+      case 'cancelled':
+        return (
+          <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
+            예약취소
+          </Badge>
+        )
+      case 'completed':
+        return (
+          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+            수업완료
+          </Badge>
+        )
+      default:
+        return null
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-muted-foreground">로딩 중...</div>
+      </div>
+    )
+  }
+
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">내 수업</h1>
-      <div className="space-y-4">
-        <div className="rounded-lg border p-8 text-center text-muted-foreground">
-          예약된 수업이 없습니다
-        </div>
+    <div className="space-y-6 max-w-4xl mx-auto">
+      {/* 헤더 */}
+      <div>
+        <h1 className="text-2xl font-bold">이용내역</h1>
+        <p className="text-sm text-muted-foreground mt-1">예약한 수업 내역을 확인하세요</p>
+      </div>
+
+      {/* 캘린더 */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col items-center">
+            <div className="mb-4 flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  const newDate = new Date(selectedDate)
+                  newDate.setMonth(newDate.getMonth() - 1)
+                  setSelectedDate(newDate)
+                }}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-lg font-semibold">
+                {selectedDate.getFullYear()}년 {selectedDate.getMonth() + 1}월
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  const newDate = new Date(selectedDate)
+                  newDate.setMonth(newDate.getMonth() + 1)
+                  setSelectedDate(newDate)
+                }}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={(date) => date && setSelectedDate(date)}
+              modifiers={{
+                hasBooking: datesWithBookings,
+              }}
+              modifiersClassNames={{
+                hasBooking:
+                  'relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:bg-blue-500 after:rounded-full',
+              }}
+              className="rounded-md border"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 필터 */}
+      <div className="flex gap-2 flex-wrap">
+        <Button
+          variant={selectedFilter === 'all' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setSelectedFilter('all')}
+        >
+          전체 ({bookings.length}건)
+        </Button>
+        {enrollments.map((enrollment) => {
+          const count = bookings.filter((b) => b.enrollments.id === enrollment.id).length
+          if (count === 0) return null
+          return (
+            <Button
+              key={enrollment.id}
+              variant={selectedFilter === enrollment.id ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSelectedFilter(enrollment.id)}
+            >
+              {enrollment.classes.name} ({count}건)
+            </Button>
+          )
+        })}
+      </div>
+
+      {/* 예약 목록 */}
+      <div className="space-y-3">
+        {filteredBookings.length === 0 ? (
+          <Card>
+            <CardContent className="p-8 text-center text-muted-foreground">
+              <p className="text-sm">이용 내역이 없습니다</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {filteredBookings.map((booking) => {
+              const schedule = booking.schedules
+              const classInfo = schedule.classes
+
+              return (
+                <Card
+                  key={booking.id}
+                  className={`transition-shadow ${
+                    booking.status === 'cancelled' ? 'opacity-60' : 'hover:shadow-md'
+                  }`}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      {/* 날짜 및 시간 */}
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="text-center min-w-[80px]">
+                          <div className="text-lg font-bold">
+                            {schedule.start_time.slice(0, 5)} ~ {schedule.end_time.slice(0, 5)}
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {new Date(schedule.date).toLocaleDateString('ko-KR', {
+                              month: 'short',
+                              day: 'numeric',
+                              weekday: 'short',
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="w-px bg-border h-16" />
+
+                        {/* 수업 정보 */}
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-2 h-2 rounded-full"
+                              style={{
+                                backgroundColor: classInfo.color || '#3b82f6',
+                              }}
+                            />
+                            <span className="font-medium">{classInfo.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            <span>
+                              {Math.round(
+                                (new Date(`2000-01-01T${schedule.end_time}`).getTime() -
+                                  new Date(`2000-01-01T${schedule.start_time}`).getTime()) /
+                                  60000
+                              )}
+                              분
+                            </span>
+                          </div>
+                          {schedule.type === 'group' && schedule.max_students && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Users className="h-3 w-3" />
+                              <span>예약 {schedule.max_students}명</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* 상태 배지 */}
+                      <div className="flex flex-col items-end gap-2">
+                        {getStatusBadge(booking.status)}
+                        {booking.status === 'confirmed' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCancelBooking(booking.id)}
+                            className="text-xs text-red-600 hover:text-red-700"
+                          >
+                            예약취소
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )
