@@ -97,9 +97,20 @@ export default function StudentDashboard() {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
+      {/* 인사말 */}
+      <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-6">
+        <h1 className="text-2xl font-bold mb-2">
+          {activeTickets.length > 0 && activeTickets[0].classes.name
+            ? `반려견`
+            : '반려견'}{' '}
+          보호자님, 안녕하세요! 👋
+        </h1>
+        <p className="text-muted-foreground">오늘도 즐거운 훈련 되세요</p>
+      </div>
+
       {/* 헤더 */}
       <div>
-        <h1 className="text-2xl font-bold">내 수강권</h1>
+        <h2 className="text-xl font-semibold">내 수강권</h2>
         <p className="text-sm text-muted-foreground mt-1">
           보유한 수강권과 예약된 수업을 확인하세요
         </p>
