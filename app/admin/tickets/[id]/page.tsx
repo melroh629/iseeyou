@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -56,11 +56,7 @@ export default function EnrollmentDetailPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => {
-    fetchData()
-  }, [enrollmentId])
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true)
     try {
       // 수강권 정보 조회
@@ -82,7 +78,11 @@ export default function EnrollmentDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [enrollmentId])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   const toggleStudent = (studentId: string) => {
     setSelectedStudents((prev) =>

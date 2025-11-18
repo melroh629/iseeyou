@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const supabaseAdmin = getSupabaseAdmin()
@@ -40,7 +42,7 @@ export async function GET(request: NextRequest) {
         status,
         booked_at,
         cancelled_at,
-        schedules (
+        schedules!inner (
           id,
           date,
           start_time,
@@ -61,8 +63,6 @@ export async function GET(request: NextRequest) {
       .eq('student_id', studentId)
       .gte('schedules.date', startDate)
       .lte('schedules.date', endDate)
-      .order('schedules.date', { ascending: false })
-      .order('schedules.start_time', { ascending: false })
 
     if (error) {
       console.error('예약 내역 조회 실패:', error)
@@ -72,7 +72,23 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ bookings: bookings || [] })
+    // 날짜와 시간으로 정렬 (최신순)
+    const sortedBookings = (bookings || []).sort((a, b) => {
+      const scheduleA = Array.isArray(a.schedules) ? a.schedules[0] : a.schedules
+      const scheduleB = Array.isArray(b.schedules) ? b.schedules[0] : b.schedules
+
+      const dateA = scheduleA?.date || ''
+      const dateB = scheduleB?.date || ''
+      const timeA = scheduleA?.start_time || ''
+      const timeB = scheduleB?.start_time || ''
+
+      if (dateA !== dateB) {
+        return dateB.localeCompare(dateA)
+      }
+      return timeB.localeCompare(timeA)
+    })
+
+    return NextResponse.json({ bookings: sortedBookings })
   } catch (error: any) {
     console.error('예약 내역 조회 에러:', error)
     return NextResponse.json(

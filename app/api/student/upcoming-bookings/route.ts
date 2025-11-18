@@ -27,7 +27,7 @@ export async function GET() {
         id,
         status,
         booked_at,
-        schedules (
+        schedules!inner (
           id,
           date,
           start_time,
@@ -48,8 +48,6 @@ export async function GET() {
       .eq('student_id', studentId)
       .eq('status', 'confirmed')
       .gte('schedules.date', today)
-      .order('schedules.date', { ascending: true })
-      .order('schedules.start_time', { ascending: true })
       .limit(10)
 
     if (error) {
@@ -60,7 +58,25 @@ export async function GET() {
       )
     }
 
-    return NextResponse.json({ bookings: bookings || [] })
+    // 날짜와 시간으로 정렬 (오름차순)
+    const sortedBookings = (bookings || [])
+      .sort((a, b) => {
+        const scheduleA = Array.isArray(a.schedules) ? a.schedules[0] : a.schedules
+        const scheduleB = Array.isArray(b.schedules) ? b.schedules[0] : b.schedules
+
+        const dateA = scheduleA?.date || ''
+        const dateB = scheduleB?.date || ''
+        const timeA = scheduleA?.start_time || ''
+        const timeB = scheduleB?.start_time || ''
+
+        if (dateA !== dateB) {
+          return dateA.localeCompare(dateB)
+        }
+        return timeA.localeCompare(timeB)
+      })
+      .slice(0, 10)
+
+    return NextResponse.json({ bookings: sortedBookings })
   } catch (error: any) {
     console.error('예약 조회 에러:', error)
     return NextResponse.json(

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -54,12 +54,6 @@ export default function BookingsPage() {
     fetchEnrollments()
   }, [])
 
-  useEffect(() => {
-    if (selectedDate) {
-      fetchSchedules()
-    }
-  }, [selectedDate, selectedEnrollment])
-
   const fetchEnrollments = async () => {
     try {
       const res = await fetch('/api/student/my-tickets')
@@ -73,7 +67,7 @@ export default function BookingsPage() {
     }
   }
 
-  const fetchSchedules = async () => {
+  const fetchSchedules = useCallback(async () => {
     const year = selectedDate.getFullYear()
     const month = selectedDate.getMonth() + 1
 
@@ -104,7 +98,13 @@ export default function BookingsPage() {
     } catch (error) {
       console.error('일정 조회 실패:', error)
     }
-  }
+  }, [selectedDate, selectedEnrollment, enrollments])
+
+  useEffect(() => {
+    if (selectedDate) {
+      fetchSchedules()
+    }
+  }, [selectedDate, fetchSchedules])
 
   const handleBooking = async (scheduleId: string) => {
     if (!selectedEnrollment) {

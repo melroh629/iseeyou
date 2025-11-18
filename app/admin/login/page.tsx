@@ -19,7 +19,7 @@ export default function AdminLoginPage() {
   // 이미 로그인되어 있으면 메인으로 리다이렉트
   useEffect(() => {
     router.push('/')
-  }, [])
+  }, [router])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
