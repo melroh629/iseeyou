@@ -4,6 +4,10 @@ import { createClient } from '@supabase/supabase-js'
 // 예약 자동 완료 크론 작업
 // 수업 시간이 지난 예약을 자동으로 'completed' 상태로 변경하고 수강권 차감
 
+// Next.js Route Segment Config - 동적 렌더링 강제
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
 interface Schedule {
   id: string
   date: string

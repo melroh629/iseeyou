@@ -64,20 +64,26 @@
 ## 테이블 상세
 
 ### 1. users
-사용자 정보 (Supabase Auth 확장)
+사용자 정보 (커스텀 인증 시스템)
 
 | 컬럼명 | 타입 | 제약조건 | 설명 |
 |--------|------|----------|------|
-| id | UUID | PRIMARY KEY | Supabase auth.users.id 참조 |
-| phone | TEXT | UNIQUE, NOT NULL | 전화번호 (인증용) |
+| id | UUID | PRIMARY KEY | 사용자 ID |
+| phone | TEXT | UNIQUE, NOT NULL | 전화번호 (숫자만, 하이픈 없음) |
 | name | TEXT | NOT NULL | 이름 |
 | role | TEXT | NOT NULL, CHECK | 역할 (admin/student) |
+| password_hash | TEXT | NULL | bcrypt 해시된 비밀번호 |
 | created_at | TIMESTAMP | DEFAULT NOW() | 생성일시 |
 | updated_at | TIMESTAMP | DEFAULT NOW() | 수정일시 |
 
 **인덱스:**
 - PRIMARY KEY on `id`
 - UNIQUE on `phone`
+
+**비고:**
+- Supabase Auth를 사용하지 않음
+- 전화번호는 숫자만 저장 (010-1234-5678 → 01012345678)
+- 비밀번호는 bcrypt로 해싱하여 저장 (관리자도 알 수 없음)
 
 ---
 
@@ -87,7 +93,7 @@
 | 컬럼명 | 타입 | 제약조건 | 설명 |
 |--------|------|----------|------|
 | id | UUID | PRIMARY KEY | 수강생 ID |
-| user_id | UUID | FOREIGN KEY → users(id) | 사용자 ID |
+| user_id | UUID | FOREIGN KEY → users(id), NULL | 사용자 ID (회원가입 시 자동 연결) |
 | dog_name | TEXT | NULL | 강아지 이름 (선택) |
 | notes | TEXT | NULL | 메모 |
 | created_at | TIMESTAMP | DEFAULT NOW() | 생성일시 |
@@ -95,6 +101,11 @@
 **인덱스:**
 - PRIMARY KEY on `id`
 - INDEX on `user_id`
+
+**비고:**
+- 관리자가 먼저 학생을 등록하면 user_id가 NULL
+- 학생이 회원가입하면 전화번호로 자동 매핑되어 user_id 연결
+- 이를 통해 관리자와 학생의 데이터가 자동으로 동기화됨
 
 ---
 
@@ -281,10 +292,11 @@
 |------|------|------|
 | v1.0 | 2025-11-10 | 초기 스키마 생성 (핵심 기능) |
 | v1.1 | 2025-11-17 | 테이블 및 컬럼 리네이밍 (class_types→classes, classes→schedules, class_type_id→class_id, class_id→schedule_id) |
+| v1.2 | 2025-11-18 | password_hash 컬럼 추가 (users 테이블), 비밀번호 기반 인증 시스템 도입 |
 
 ---
 
 **작성일:** 2025-11-10
-**최종 수정일:** 2025-11-17
+**최종 수정일:** 2025-11-18
 **작성자:** ISeeYou 개발팀
 **프로젝트:** 강아지 훈련 수업 예약 시스템
