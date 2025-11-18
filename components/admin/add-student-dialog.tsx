@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Plus } from 'lucide-react'
 import { useFormSubmit } from '@/lib/hooks/use-form-submit'
+import { formatPhoneNumber, normalizePhoneNumber } from '@/lib/utils/phone'
 
 export function AddStudentDialog() {
   const [open, setOpen] = useState(false)
@@ -36,14 +37,11 @@ export function AddStudentDialog() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await handleSubmit(formData)
-  }
-
-  const formatPhoneNumber = (value: string) => {
-    const numbers = value.replace(/[^\d]/g, '')
-    if (numbers.length <= 3) return numbers
-    if (numbers.length <= 7) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`
-    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`
+    // 전화번호에서 하이픈 제거하여 전송
+    await handleSubmit({
+      ...formData,
+      phone: normalizePhoneNumber(formData.phone),
+    })
   }
 
   return (

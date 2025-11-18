@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Menu, X } from "lucide-react"
+import { LogoutButton } from "@/components/logout-button"
 
 export default function StudentLayout({
   children,
@@ -43,6 +44,11 @@ export default function StudentLayout({
             <Link href="/student/my-classes" className={linkClass}>
               내 수업
             </Link>
+            <Link href="/student/profile" className={linkClass}>
+              마이페이지
+            </Link>
+            <div className="h-6 w-px bg-border" />
+            <LogoutButton />
           </div>
           <button
             className="inline-flex h-10 w-10 items-center justify-center rounded-md border sm:hidden"
@@ -63,6 +69,12 @@ export default function StudentLayout({
             <Link href="/student/my-classes" className={linkClass} onClick={closeMenu}>
               내 수업
             </Link>
+            <Link href="/student/profile" className={linkClass} onClick={closeMenu}>
+              마이페이지
+            </Link>
+            <div className="border-t pt-3">
+              <LogoutButton />
+            </div>
           </div>
         )}
       </header>

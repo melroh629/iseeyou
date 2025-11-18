@@ -10,9 +10,10 @@ export function LogoutButton() {
   const handleLogout = async () => {
     setLoading(true);
     try {
-      // 쿠키 삭제 (클라이언트에서는 httpOnly 쿠키를 직접 삭제 못하므로 API 호출)
+      // 쿠키 삭제 API 호출
       await fetch("/api/auth/logout", { method: "POST" });
-      window.location.href = "/admin/login";
+      // 메인 페이지로 이동
+      window.location.href = "/";
     } catch (error) {
       console.error("로그아웃 실패:", error);
       setLoading(false);

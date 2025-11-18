@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
-import { LogoutButton } from "@/components/admin/logout-button";
+import { LogoutButton } from "@/components/logout-button";
 
 export default function AdminLayout({
   children,
