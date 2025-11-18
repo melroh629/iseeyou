@@ -220,6 +220,58 @@
 
 ---
 
+### 7. password_reset_codes
+비밀번호 재설정 인증코드
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|----------|------|
+| id | UUID | PRIMARY KEY | 코드 ID |
+| phone | TEXT | NOT NULL | 전화번호 (숫자만) |
+| code | TEXT | NOT NULL | 6자리 인증코드 |
+| expires_at | TIMESTAMP | NOT NULL | 만료 시간 |
+| verified | BOOLEAN | DEFAULT FALSE | 사용 여부 |
+| created_at | TIMESTAMP | DEFAULT NOW() | 생성일시 |
+
+**인덱스:**
+- PRIMARY KEY on `id`
+- INDEX on `phone`
+- INDEX on `code`
+- INDEX on `expires_at`
+
+**비즈니스 로직:**
+- 코드 유효기간: 10분
+- 1회용 (verified=true 시 재사용 불가)
+- Rate Limiting: 1시간에 3회
+
+---
+
+### 8. refresh_tokens
+Refresh Token (세션 관리)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|--------|------|----------|------|
+| id | UUID | PRIMARY KEY | 토큰 ID |
+| user_id | UUID | FOREIGN KEY → users(id) | 사용자 ID |
+| token | TEXT | NOT NULL, UNIQUE | Refresh Token (256-bit hex) |
+| expires_at | TIMESTAMP | NOT NULL | 만료 시간 (30일) |
+| created_at | TIMESTAMP | DEFAULT NOW() | 생성일시 |
+| last_used_at | TIMESTAMP | DEFAULT NOW() | 마지막 사용 시간 |
+| ip_address | TEXT | NULL | IP 주소 |
+| user_agent | TEXT | NULL | User-Agent |
+
+**인덱스:**
+- PRIMARY KEY on `id`
+- INDEX on `user_id`
+- INDEX on `token` (UNIQUE)
+- INDEX on `expires_at`
+
+**비즈니스 로직:**
+- Access Token (15분) 갱신용
+- 로그아웃 시 DB에서 삭제
+- IP/User-Agent 추적으로 의심스러운 활동 감지
+
+---
+
 ## 관계 설명
 
 ### 1. users ↔ students (1:1)
@@ -293,6 +345,7 @@
 | v1.0 | 2025-11-10 | 초기 스키마 생성 (핵심 기능) |
 | v1.1 | 2025-11-17 | 테이블 및 컬럼 리네이밍 (class_types→classes, classes→schedules, class_type_id→class_id, class_id→schedule_id) |
 | v1.2 | 2025-11-18 | password_hash 컬럼 추가 (users 테이블), 비밀번호 기반 인증 시스템 도입 |
+| v1.3 | 2025-11-18 | 보안 강화: password_reset_codes, refresh_tokens 테이블 추가 |
 
 ---
 

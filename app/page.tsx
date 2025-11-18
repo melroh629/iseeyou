@@ -77,11 +77,18 @@ export default function Home() {
                   {loading ? '로그인 중...' : '로그인'}
                 </Button>
 
-                <div className="text-center text-sm">
-                  <span className="text-muted-foreground">계정이 없으신가요? </span>
-                  <Link href="/student/signup" className="text-primary hover:underline">
-                    회원가입
-                  </Link>
+                <div className="text-center text-sm space-y-1">
+                  <div>
+                    <span className="text-muted-foreground">계정이 없으신가요? </span>
+                    <Link href="/student/signup" className="text-primary hover:underline">
+                      회원가입
+                    </Link>
+                  </div>
+                  <div>
+                    <Link href="/reset-password" className="text-muted-foreground hover:text-foreground text-xs">
+                      비밀번호 찾기
+                    </Link>
+                  </div>
                 </div>
               </div>
             </form>
