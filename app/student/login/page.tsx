@@ -9,10 +9,10 @@ import Link from 'next/link'
 import { formatPhoneNumber } from '@/lib/utils/phone'
 import { useLogin } from '@/lib/hooks/use-login'
 
-export default function Home() {
+export default function StudentLoginPage() {
   const [phoneNumber, setPhoneNumber] = useState('')
   const [password, setPassword] = useState('')
-  const { login, loading } = useLogin()
+  const { login, loading } = useLogin({ role: 'student', redirectPath: '/student' })
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,12 +25,12 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-green-50 to-slate-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-green-50 p-4">
       <div className="w-full max-w-md space-y-6">
         {/* 헤더 */}
         <div className="text-center">
           <h1 className="text-3xl font-bold">ISeeYou</h1>
-          <p className="text-muted-foreground mt-2">아이씨유 독 트레이닝</p>
+          <p className="text-muted-foreground mt-2">강아지 훈련 수업 예약</p>
         </div>
 
         {/* 로그인 카드 */}
@@ -38,7 +38,7 @@ export default function Home() {
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center">로그인</CardTitle>
             <CardDescription className="text-center">
-              전화번호와 비밀번호로 로그인하세요
+              수강생 계정으로 로그인하세요
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -48,6 +48,7 @@ export default function Home() {
                 <Input
                   id="phone"
                   type="tel"
+                  placeholder="010-1234-5678"
                   value={phoneNumber}
                   onChange={handlePhoneChange}
                   maxLength={13}
@@ -61,6 +62,7 @@ export default function Home() {
                 <Input
                   id="password"
                   type="password"
+                  placeholder="비밀번호를 입력하세요"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -87,6 +89,13 @@ export default function Home() {
             </form>
           </CardContent>
         </Card>
+
+        {/* 홈으로 */}
+        <div className="text-center">
+          <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
+            ← 홈으로 돌아가기
+          </Link>
+        </div>
       </div>
     </div>
   )
