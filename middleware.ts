@@ -9,7 +9,7 @@ export async function middleware(request: NextRequest) {
   const isAdminSubdomain = hostname.startsWith('admin.')
 
   // JWT 토큰 확인
-  const token = request.cookies.get('auth-token')?.value
+  const token = request.cookies.get('token')?.value
   const user = token ? await verifyToken(token) : null
 
   // admin 서브도메인인 경우
@@ -34,7 +34,7 @@ export async function middleware(request: NextRequest) {
       if (user.role !== 'admin') {
         // 관리자가 아니면 로그인 페이지로
         const response = NextResponse.redirect(new URL('/admin/login', request.url))
-        response.cookies.delete('auth-token')
+        response.cookies.delete('token')
         return response
       }
     }
@@ -58,16 +58,16 @@ export async function middleware(request: NextRequest) {
   if (url.pathname.startsWith('/admin')) {
     // 로컬 개발 환경에서는 허용 (localhost:8080)
     if (hostname.includes('localhost')) {
-      // 로그인 페이지가 아니고, 로그인하지 않았으면 로그인 페이지로
+      // 로그인 페이지가 아니고, 로그인하지 않았으면 메인(/)으로 리다이렉트
       if (url.pathname !== '/admin/login' && !user) {
-        return NextResponse.redirect(new URL('/admin/login', request.url))
+        return NextResponse.redirect(new URL('/', request.url))
       }
 
       // 로그인되어 있으면 관리자 권한 확인
       if (user && url.pathname !== '/admin/login') {
         if (user.role !== 'admin') {
-          const response = NextResponse.redirect(new URL('/admin/login', request.url))
-          response.cookies.delete('auth-token')
+          const response = NextResponse.redirect(new URL('/', request.url))
+          response.cookies.delete('token')
           return response
         }
       }
