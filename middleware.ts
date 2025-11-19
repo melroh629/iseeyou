@@ -18,7 +18,7 @@ export async function middleware(request: NextRequest) {
     if (url.pathname === '/admin/login' || url.pathname === '/login') {
       // 이미 로그인되어 있으면 대시보드로 리다이렉트
       if (user && user.role === 'admin') {
-        return NextResponse.redirect(new URL('/admin', request.url))
+        return NextResponse.redirect(new URL('/', request.url))
       }
       return NextResponse.next()
     }
