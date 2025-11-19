@@ -3,6 +3,7 @@ import { getCurrentUserFromServer } from "@/lib/auth/user";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, Users, Ticket, Settings } from "lucide-react";
 import { redirect } from "next/navigation";
+import { DashboardCalendar } from "./_components/dashboard-calendar";
 
 // 캐싱 비활성화 - 항상 최신 데이터 표시
 export const dynamic = "force-dynamic";
@@ -93,7 +94,10 @@ export default async function AdminDashboard() {
         </Card>
       </div>
 
-      {/* 최근 활동 섹션 (추후 추가 가능) */}
+      {/* 일정 캘린더 */}
+      <DashboardCalendar />
+
+      {/* 빠른 시작 */}
       <Card>
         <CardHeader>
           <CardTitle>빠른 시작</CardTitle>

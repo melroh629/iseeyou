@@ -1,25 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
+import { Schedule, Booking } from '@/types/schedule'
 
 export async function GET(request: NextRequest) {
   try {
     const supabaseAdmin = getSupabaseAdmin()
     const { searchParams } = new URL(request.url)
     const classId = searchParams.get('classId')
+    const year = searchParams.get('year')
+    const month = searchParams.get('month')
 
-    if (!classId) {
-      return NextResponse.json(
-        { error: 'classId가 필요합니다.' },
-        { status: 400 }
-      )
-    }
-
-    const { data: schedules, error } = await supabaseAdmin
+    let query = supabaseAdmin
       .from('schedules')
-      .select('*')
-      .eq('class_id', classId)
+      .select(`
+        id,
+        date,
+        start_time,
+        end_time,
+        type,
+        max_students,
+        status,
+        classes (
+          id,
+          name,
+          color
+        ),
+        bookings(id, status)
+      `)
       .order('date', { ascending: true })
       .order('start_time', { ascending: true })
+
+    // classId 필터
+    if (classId) {
+      query = query.eq('class_id', classId)
+    }
+
+    // year, month 필터
+    if (year && month) {
+      const startDate = `${year}-${month.padStart(2, '0')}-01`
+      const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate()
+      const endDate = `${year}-${month.padStart(2, '0')}-${lastDay}`
+      query = query.gte('date', startDate).lte('date', endDate)
+    }
+
+    const { data: schedules, error } = await query
 
     if (error) {
       console.error('일정 조회 실패:', error)
@@ -29,7 +53,17 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ schedules })
+    // 각 스케줄에 예약 수 추가 (취소된 것 제외)
+    const schedulesWithCount = (schedules || []).map((schedule: Schedule) => ({
+      ...schedule,
+      _count: {
+        bookings: (schedule.bookings || []).filter(
+          (booking: Booking) => booking.status !== 'cancelled'
+        ).length,
+      },
+    }))
+
+    return NextResponse.json({ schedules: schedulesWithCount })
   } catch (error: any) {
     console.error('일정 조회 에러:', error)
     return NextResponse.json(
