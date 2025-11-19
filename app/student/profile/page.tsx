@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { User, Dog, Phone, Calendar, Camera, Edit2, Check, X, Lock } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { Separator } from '@/components/ui/separator'
+import { fetchWithRefresh } from '@/lib/fetch-with-refresh'
 
 interface Profile {
   id: string
@@ -48,7 +49,7 @@ export default function ProfilePage() {
   const fetchProfile = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/student/profile')
+      const res = await fetchWithRefresh('/api/student/profile')
       const data = await res.json()
 
       if (data.profile) {
@@ -76,7 +77,7 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     try {
-      const res = await fetch('/api/student/profile', {
+      const res = await fetchWithRefresh('/api/student/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -140,7 +141,7 @@ export default function ProfilePage() {
     setChangingPassword(true)
 
     try {
-      const res = await fetch('/api/auth/change-password', {
+      const res = await fetchWithRefresh('/api/auth/change-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

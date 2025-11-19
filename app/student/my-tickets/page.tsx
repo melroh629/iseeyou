@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Ticket, Calendar, AlertCircle } from 'lucide-react'
+import { fetchWithRefresh } from '@/lib/fetch-with-refresh'
 
 interface Enrollment {
   id: string
@@ -31,7 +32,7 @@ export default function MyTicketsPage() {
   const fetchTickets = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/student/my-tickets')
+      const res = await fetchWithRefresh('/api/student/my-tickets')
       const data = await res.json()
       setTickets(data.tickets || [])
     } catch (error) {
