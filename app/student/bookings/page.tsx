@@ -12,8 +12,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Clock, Users, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { fetchWithRefresh } from '@/lib/fetch-with-refresh'
 
 interface Schedule {
   id: string
@@ -28,6 +39,10 @@ interface Schedule {
     name: string
     color: string | null
   }
+  _count?: {
+    bookings: number
+  }
+  isBooked?: boolean
 }
 
 interface Enrollment {
@@ -49,6 +64,8 @@ export default function BookingsPage() {
   const [enrollments, setEnrollments] = useState<Enrollment[]>([])
   const [schedules, setSchedules] = useState<Schedule[]>([])
   const [loading, setLoading] = useState(true)
+  const [bookingDialogOpen, setBookingDialogOpen] = useState(false)
+  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null)
 
   useEffect(() => {
     fetchEnrollments()
@@ -56,10 +73,15 @@ export default function BookingsPage() {
 
   const fetchEnrollments = async () => {
     try {
-      const res = await fetch('/api/student/my-tickets')
+      const res = await fetchWithRefresh('/api/student/my-tickets')
       const data = await res.json()
       const active = (data.tickets || []).filter((t: Enrollment) => t.status === 'active')
       setEnrollments(active)
+
+      // 수강권이 있으면 자동으로 첫 번째 수강권 선택 (가장 먼저 등록된 것)
+      if (active.length > 0 && !selectedEnrollment) {
+        setSelectedEnrollment(active[0].id)
+      }
     } catch (error) {
       console.error('수강권 조회 실패:', error)
     } finally {
@@ -89,7 +111,7 @@ export default function BookingsPage() {
           month: month.toString(),
           classId: classId!,
         })
-        return fetch(`/api/student/available-schedules?${params}`).then((res) => res.json())
+        return fetchWithRefresh(`/api/student/available-schedules?${params}`).then((res) => res.json())
       })
 
       const results = await Promise.all(promises)
@@ -106,7 +128,7 @@ export default function BookingsPage() {
     }
   }, [selectedDate, fetchSchedules])
 
-  const handleBooking = async (scheduleId: string) => {
+  const openBookingDialog = (schedule: Schedule) => {
     if (!selectedEnrollment) {
       toast({
         variant: 'destructive',
@@ -114,16 +136,55 @@ export default function BookingsPage() {
       })
       return
     }
-
-    // TODO: 예약 API 호출
-    toast({
-      title: '예약 완료',
-      description: '수업이 예약되었습니다.',
-    })
+    setSelectedSchedule(schedule)
+    setBookingDialogOpen(true)
   }
 
-  // 선택된 날짜의 수업 목록
-  const selectedDateStr = selectedDate.toISOString().split('T')[0]
+  const handleBooking = async () => {
+    if (!selectedSchedule || !selectedEnrollment) return
+
+    try {
+      const res = await fetchWithRefresh('/api/student/create-booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scheduleId: selectedSchedule.id,
+          enrollmentId: selectedEnrollment,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || '예약에 실패했습니다.')
+      }
+
+      toast({
+        title: '예약 완료',
+        description: '수업이 예약되었습니다.',
+      })
+
+      setBookingDialogOpen(false)
+      setSelectedSchedule(null)
+
+      // 예약 성공 후 스케줄 목록 새로고침
+      await fetchSchedules()
+      await fetchEnrollments()
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: '예약 실패',
+        description: error.message,
+      })
+      setBookingDialogOpen(false)
+    }
+  }
+
+  // 선택된 날짜의 수업 목록 (로컬 시간 기준으로 변환)
+  const year = selectedDate.getFullYear()
+  const month = String(selectedDate.getMonth() + 1).padStart(2, '0')
+  const day = String(selectedDate.getDate()).padStart(2, '0')
+  const selectedDateStr = `${year}-${month}-${day}`
   const schedulesForSelectedDate = schedules.filter((s) => s.date === selectedDateStr)
 
   // 수업이 있는 날짜들
@@ -280,20 +341,28 @@ export default function BookingsPage() {
                         {schedule.type === 'group' && schedule.max_students && (
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Users className="h-3 w-3" />
-                            <span>최대 {schedule.max_students}명</span>
+                            <span>
+                              {schedule._count?.bookings || 0}/{schedule.max_students}명
+                            </span>
                           </div>
                         )}
                       </div>
                     </div>
 
                     {/* 예약 버튼 */}
-                    <Button
-                      onClick={() => handleBooking(schedule.id)}
-                      disabled={!selectedEnrollment}
-                      className="min-w-[100px]"
-                    >
-                      예약하기
-                    </Button>
+                    {schedule.isBooked ? (
+                      <Badge className="bg-blue-600 text-white min-w-[100px] justify-center">
+                        예약완료
+                      </Badge>
+                    ) : (
+                      <Button
+                        onClick={() => openBookingDialog(schedule)}
+                        disabled={!selectedEnrollment}
+                        className="min-w-[100px]"
+                      >
+                        예약하기
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -301,6 +370,39 @@ export default function BookingsPage() {
           </div>
         )}
       </div>
+
+      {/* 예약 확인 다이얼로그 */}
+      <AlertDialog open={bookingDialogOpen} onOpenChange={setBookingDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>수업을 예약하시겠습니까?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedSchedule && (
+                <div className="space-y-2 mt-4">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{selectedSchedule.classes.name}</span>
+                  </div>
+                  <div className="text-sm">
+                    {new Date(selectedSchedule.date).toLocaleDateString('ko-KR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      weekday: 'long',
+                    })}
+                  </div>
+                  <div className="text-sm">
+                    {selectedSchedule.start_time.slice(0, 5)} ~ {selectedSchedule.end_time.slice(0, 5)}
+                  </div>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBooking}>예약하기</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
