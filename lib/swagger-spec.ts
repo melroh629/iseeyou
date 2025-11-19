@@ -3,7 +3,42 @@ export const swaggerSpec = {
   info: {
     title: 'ISeeYou API',
     version: '1.0.0',
-    description: '강아지 훈련 수업 관리 시스템 API',
+    description: `
+강아지 훈련 수업 관리 시스템 API
+
+## 테스트
+
+### E2E 테스트 (Playwright)
+
+프로젝트에 Playwright E2E 테스트가 구축되어 있습니다.
+
+**실행 방법:**
+\`\`\`bash
+# UI 모드 (추천)
+npm run test:e2e:ui
+
+# 일반 실행
+npm run test:e2e
+
+# 디버그 모드
+npm run test:e2e:debug
+\`\`\`
+
+**테스트 파일 위치:** \`tests/\` 디렉토리
+
+**주요 테스트:**
+- 학생 로그인 및 예약 플로우
+- 예약 취소 플로우
+- 관리자 일정 관리
+
+자세한 내용은 \`tests/README.md\` 참고
+
+## 인증
+
+모든 보호된 엔드포인트는 JWT 기반 쿠키 인증을 사용합니다.
+- Access Token: 15분 유효
+- Refresh Token: 30일 유효
+`,
   },
   servers: [
     {
