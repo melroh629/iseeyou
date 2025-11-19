@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select'
 import { Clock, Users, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { fetchWithRefresh } from '@/lib/fetch-with-refresh'
 
 interface Booking {
   id: string
@@ -62,7 +63,7 @@ export default function MyClassesPage() {
 
   const fetchEnrollments = async () => {
     try {
-      const res = await fetch('/api/student/my-tickets')
+      const res = await fetchWithRefresh('/api/student/my-tickets')
       const data = await res.json()
       setEnrollments(data.tickets || [])
     } catch (error) {
@@ -82,7 +83,7 @@ export default function MyClassesPage() {
         month: month.toString(),
       })
 
-      const res = await fetch(`/api/student/my-bookings?${params}`)
+      const res = await fetchWithRefresh(`/api/student/my-bookings?${params}`)
       const data = await res.json()
       setBookings(data.bookings || [])
     } catch (error) {
@@ -118,8 +119,8 @@ export default function MyClassesPage() {
     switch (status) {
       case 'confirmed':
         return (
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-            출석완료
+          <Badge className="bg-blue-600 text-white hover:bg-blue-700">
+            예약완료
           </Badge>
         )
       case 'cancelled':
@@ -130,8 +131,8 @@ export default function MyClassesPage() {
         )
       case 'completed':
         return (
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-            수업완료
+          <Badge className="bg-green-600 text-white hover:bg-green-700">
+            출석완료
           </Badge>
         )
       default:
@@ -305,10 +306,10 @@ export default function MyClassesPage() {
                         {getStatusBadge(booking.status)}
                         {booking.status === 'confirmed' && (
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
                             onClick={() => handleCancelBooking(booking.id)}
-                            className="text-xs text-red-600 hover:text-red-700"
+                            className="text-xs border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
                           >
                             예약취소
                           </Button>
