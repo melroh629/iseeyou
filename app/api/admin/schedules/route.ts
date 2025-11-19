@@ -54,11 +54,11 @@ export async function GET(request: NextRequest) {
     }
 
     // 각 스케줄에 예약 수 추가 (취소된 것 제외)
-    const schedulesWithCount = (schedules || []).map((schedule: Schedule) => ({
+    const schedulesWithCount = (schedules || []).map((schedule) => ({
       ...schedule,
       _count: {
         bookings: (schedule.bookings || []).filter(
-          (booking: Booking) => booking.status !== 'cancelled'
+          (booking) => booking.status !== 'cancelled'
         ).length,
       },
     }))
