@@ -341,6 +341,63 @@ export const swaggerSpec = {
         },
       },
     },
+    '/api/bookings/{id}/cancel': {
+      post: {
+        tags: ['예약'],
+        summary: '예약 취소',
+        description: '학생이 예약을 취소합니다. 취소 기한이 지난 경우 수강권이 차감됩니다.',
+        security: [{ cookieAuth: [] }],
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+            description: '취소할 예약 ID',
+          },
+        ],
+        responses: {
+          '200': {
+            description: '예약 취소 성공',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    message: { type: 'string' },
+                    late_cancellation: {
+                      type: 'boolean',
+                      description: '취소 기한 경과 여부',
+                    },
+                    deducted: {
+                      type: 'boolean',
+                      description: '수강권 차감 여부',
+                    },
+                  },
+                },
+              },
+            },
+          },
+          '400': {
+            description: '잘못된 요청 (이미 취소됨, 이미 완료됨)',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          '404': {
+            description: '예약을 찾을 수 없음',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
     '/api/admin/schedules': {
       get: {
         tags: ['관리자', '일정'],

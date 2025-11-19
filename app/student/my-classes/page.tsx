@@ -98,11 +98,39 @@ export default function MyClassesPage() {
   }, [selectedDate, fetchBookings])
 
   const handleCancelBooking = async (bookingId: string) => {
-    // TODO: 예약 취소 API 호출
-    toast({
-      title: '예약 취소 완료',
-      description: '수업 예약이 취소되었습니다.',
-    })
+    if (!confirm('정말 예약을 취소하시겠습니까?\n취소 기한이 지난 경우 수강권이 차감될 수 있습니다.')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}/cancel`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || '예약 취소에 실패했습니다.')
+      }
+
+      toast({
+        title: '예약 취소 완료',
+        description: data.late_cancellation
+          ? '취소 기한이 지나 수강권이 차감되었습니다.'
+          : '수업 예약이 취소되었습니다.',
+        variant: data.late_cancellation ? 'destructive' : 'default',
+      })
+
+      // 예약 목록 새로고침
+      fetchBookings()
+    } catch (error: any) {
+      toast({
+        title: '예약 취소 실패',
+        description: error.message,
+        variant: 'destructive',
+      })
+    }
   }
 
   // 수업이 있는 날짜들
