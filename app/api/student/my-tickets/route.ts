@@ -26,13 +26,16 @@ export async function GET(request: NextRequest) {
     const supabaseAdmin = getSupabaseAdmin()
 
     // user.userId로 student 찾기
-    const { data: student } = await supabaseAdmin
+    const { data: student, error: studentError } = await supabaseAdmin
       .from('students')
       .select('id')
       .eq('user_id', user.userId)
       .single()
 
+    console.log('박태웅 student 조회:', { userId: user.userId, student, studentError })
+
     if (!student) {
+      console.log('student not found, returning empty tickets')
       return NextResponse.json({ tickets: [] })
     }
 
@@ -56,8 +59,13 @@ export async function GET(request: NextRequest) {
         )
       `)
       .eq('student_id', student.id)
-      .order('enrollments(status)', { ascending: true })
-      .order('enrollments(valid_until)', { ascending: false })
+
+    console.log('enrollment_students 조회 결과:', {
+      studentId: student.id,
+      enrollmentStudents,
+      error,
+      count: enrollmentStudents?.length
+    })
 
     if (error) {
       console.error('수강권 조회 실패:', error)
@@ -67,13 +75,33 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // enrollment_students의 데이터를 프론트엔드 형식에 맞게 변환
-    const tickets = (enrollmentStudents || []).map((es: any) => ({
-      ...es.enrollments,
-      used_count: es.used_count, // 개별 학생의 used_count
-    }))
+    // enrollment_students의 데이터를 프론트엔드 형식에 맞게 변환 및 정렬
+    const tickets = (enrollmentStudents || [])
+      .map((es: any) => ({
+        ...es.enrollments,
+        used_count: es.used_count, // 개별 학생의 used_count
+      }))
+      .sort((a, b) => {
+        // status로 먼저 정렬 (active > expired > suspended)
+        const statusOrder: any = { active: 0, expired: 1, suspended: 2 }
+        if (statusOrder[a.status] !== statusOrder[b.status]) {
+          return statusOrder[a.status] - statusOrder[b.status]
+        }
+        // valid_until로 정렬 (내림차순)
+        return new Date(b.valid_until).getTime() - new Date(a.valid_until).getTime()
+      })
 
-    return NextResponse.json({ tickets })
+    console.log('최종 반환 tickets:', { count: tickets.length, tickets })
+
+    return NextResponse.json({
+      tickets,
+      _debug: {
+        userId: user.userId,
+        studentId: student.id,
+        enrollmentStudentsCount: enrollmentStudents?.length || 0,
+        ticketsCount: tickets.length
+      }
+    })
   } catch (error: any) {
     console.error('수강권 조회 에러:', error)
     return NextResponse.json(
