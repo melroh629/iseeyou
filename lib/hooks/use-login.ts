@@ -40,9 +40,22 @@ export function useLogin({ role, redirectPath }: UseLoginOptions = {}) {
       await new Promise((resolve) => setTimeout(resolve, 300))
 
       // 리다이렉트
-      const targetPath = redirectPath ||
-        (data.user.role === 'admin' ? '/admin' : '/student')
-      window.location.href = targetPath
+      if (redirectPath) {
+        window.location.href = redirectPath
+      } else if (data.user.role === 'admin') {
+        // 프로덕션에서는 admin 서브도메인으로, 로컬에서는 /admin으로
+        if (typeof window !== 'undefined') {
+          const isLocal = window.location.hostname === 'localhost'
+          if (isLocal) {
+            window.location.href = '/admin'
+          } else {
+            window.location.href = `https://admin.${window.location.hostname}`
+          }
+        }
+      } else {
+        // student
+        window.location.href = '/student'
+      }
 
       return data
     } catch (err: any) {
