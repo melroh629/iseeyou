@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
+import { verifyToken } from '@/lib/auth/jwt'
+import { Schedule, Booking } from '@/types/schedule'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,6 +18,22 @@ export async function GET(request: NextRequest) {
         { error: '년도와 월을 입력해주세요.' },
         { status: 400 }
       )
+    }
+
+    // 현재 로그인한 학생 정보 가져오기
+    const token = request.cookies.get('token')?.value
+    let currentStudentId: string | null = null
+
+    if (token) {
+      const user = await verifyToken(token)
+      if (user && user.role === 'student') {
+        const { data: student } = await supabaseAdmin
+          .from('students')
+          .select('id')
+          .eq('user_id', user.userId)
+          .single()
+        currentStudentId = student?.id || null
+      }
     }
 
     // 해당 월의 시작일과 종료일 계산
@@ -37,7 +55,8 @@ export async function GET(request: NextRequest) {
           id,
           name,
           color
-        )
+        ),
+        bookings(id, status)
       `)
       .eq('status', 'scheduled')
       .gte('date', startDate)
@@ -60,7 +79,38 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ schedules: schedules || [] })
+    // 각 스케줄에 예약 수 추가 및 현재 학생의 예약 여부 확인
+    const schedulesWithCount = await Promise.all(
+      (schedules || []).map(async (schedule) => {
+        const activeBookings = (schedule.bookings || []).filter(
+          (booking: Booking) => booking.status !== 'cancelled'
+        )
+
+        // 현재 학생이 이 스케줄을 예약했는지 확인
+        let isBooked = false
+        if (currentStudentId) {
+          const { data: myBooking } = await supabaseAdmin
+            .from('bookings')
+            .select('id')
+            .eq('schedule_id', schedule.id)
+            .eq('student_id', currentStudentId)
+            .in('status', ['confirmed', 'completed'])
+            .maybeSingle()
+
+          isBooked = !!myBooking
+        }
+
+        return {
+          ...schedule,
+          _count: {
+            bookings: activeBookings.length,
+          },
+          isBooked,
+        }
+      })
+    )
+
+    return NextResponse.json({ schedules: schedulesWithCount })
   } catch (error: any) {
     console.error('일정 조회 에러:', error)
     return NextResponse.json(
