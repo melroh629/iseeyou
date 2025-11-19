@@ -4,6 +4,7 @@ import { verifyPassword } from '@/lib/auth/password'
 import { sign } from 'jsonwebtoken'
 import { rateLimiter, getClientIP } from '@/lib/auth/rate-limiter'
 import { createRefreshToken } from '@/lib/auth/refresh-token'
+import { TOKEN_EXPIRATION, RATE_LIMIT } from '@/lib/constants/auth'
 
 const JWT_SECRET = process.env.JWT_SECRET!
 
@@ -21,9 +22,13 @@ export async function POST(request: Request) {
       )
     }
 
-    // Rate Limiting: IP 기반 (15분에 5회)
+    // Rate Limiting: IP 기반
     const clientIP = getClientIP(request)
-    const rateLimitResult = rateLimiter.check(clientIP, 5, 15 * 60 * 1000)
+    const rateLimitResult = rateLimiter.check(
+      clientIP,
+      RATE_LIMIT.LOGIN_MAX_ATTEMPTS,
+      RATE_LIMIT.LOGIN_WINDOW_MS
+    )
 
     if (!rateLimitResult.allowed) {
       const minutesRemaining = Math.ceil(
@@ -125,7 +130,7 @@ export async function POST(request: Request) {
       studentId = student?.id || null
     }
 
-    // Access Token 생성 (15분 유효)
+    // Access Token 생성
     const accessToken = sign(
       {
         userId: user.id,
@@ -133,7 +138,7 @@ export async function POST(request: Request) {
         studentId: studentId,
       },
       JWT_SECRET,
-      { expiresIn: '15m' }
+      { expiresIn: TOKEN_EXPIRATION.ACCESS_TOKEN }
     )
 
     // Refresh Token 생성 (30일 유효)
@@ -151,21 +156,21 @@ export async function POST(request: Request) {
       },
     })
 
-    // Access Token (15분)
+    // Access Token
     response.cookies.set('token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 15 * 60, // 15분
+      maxAge: TOKEN_EXPIRATION.ACCESS_TOKEN_SECONDS,
       path: '/',
     })
 
-    // Refresh Token (30일)
+    // Refresh Token
     response.cookies.set('refresh_token', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 30 * 24 * 60 * 60, // 30일
+      maxAge: TOKEN_EXPIRATION.REFRESH_TOKEN_SECONDS,
       path: '/',
     })
 

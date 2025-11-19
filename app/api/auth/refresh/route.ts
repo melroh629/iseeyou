@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { verifyRefreshToken } from '@/lib/auth/refresh-token'
 import { sign } from 'jsonwebtoken'
 import { cookies } from 'next/headers'
+import { TOKEN_EXPIRATION } from '@/lib/constants/auth'
 
 // Next.js Route Segment Config
 export const dynamic = 'force-dynamic'
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
       studentId = student?.id || null
     }
 
-    // 새로운 Access Token 생성 (15분)
+    // 새로운 Access Token 생성
     const newAccessToken = sign(
       {
         userId: user.id,
@@ -67,7 +68,7 @@ export async function POST(request: Request) {
         studentId: studentId,
       },
       JWT_SECRET,
-      { expiresIn: '15m' }
+      { expiresIn: TOKEN_EXPIRATION.ACCESS_TOKEN }
     )
 
     // 쿠키에 새 Access Token 저장
@@ -80,7 +81,7 @@ export async function POST(request: Request) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 15 * 60, // 15분
+      maxAge: TOKEN_EXPIRATION.ACCESS_TOKEN_SECONDS,
       path: '/',
     })
 
