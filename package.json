@@ -9,7 +9,8 @@
     "lint": "next lint",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:debug": "playwright test --debug"
+    "test:e2e:debug": "playwright test --debug",
+    "test:cleanup": "npx tsx tests/cleanup-e2e-data.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
