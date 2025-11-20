@@ -4,45 +4,72 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
+    --background: 210 40% 98%; /* M3 Surface */
+    --foreground: 222.2 47.4% 11.2%;
+    
+    /* M3 Surface Tones */
+    --surface-1: 210 40% 96%;
+    --surface-2: 210 40% 94%;
+    --surface-3: 210 40% 92%;
+
+    --card: 210 40% 96%; /* Surface 1 for cards */
+    --card-foreground: 222.2 47.4% 11.2%;
+    
+    --popover: 210 40% 98%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+    
+    --primary: 222.2 47.4% 11.2%; /* Keep brand color for now, or switch to M3 Purple/Blue? Keeping for consistency */
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
+    
+    --secondary: 210 40% 90%; /* Darker surface for secondary */
     --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
+    
+    --muted: 210 40% 90%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
+    
+    --accent: 210 40% 90%;
     --accent-foreground: 222.2 47.4% 11.2%;
+    
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
+    
+    --border: 214.3 31.8% 85%; /* Slightly darker border */
+    --input: 214.3 31.8% 85%;
+    --ring: 222.2 47.4% 11.2%;
+    
+    --radius: 1rem; /* M3 Rounded Corners (16px) */
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    
+    /* M3 Dark Surface Tones */
+    --surface-1: 222.2 84% 10%;
+    --surface-2: 222.2 84% 15%;
+    --surface-3: 222.2 84% 20%;
+
+    --card: 222.2 84% 10%;
     --card-foreground: 210 40% 98%;
+    
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
+    
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
+    
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
+    
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
+    
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
+    
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
+    
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;

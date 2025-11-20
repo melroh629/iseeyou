@@ -27,26 +27,46 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 async function cleanup() {
   console.log('🧹 E2E 테스트 데이터 정리 시작...\n')
 
-  // E2E 테스트로 생성된 수강권 찾기
-  const { data: testEnrollments, error: findError } = await supabase
+  // 1. E2E 테스트로 생성된 수강권 찾기
+  const { data: testEnrollments, error: findEnrollmentsError } = await supabase
     .from('enrollments')
     .select('id, name')
     .like('name', '%E2E%')
 
-  if (findError) {
-    console.error('❌ 수강권 조회 실패:', findError)
+  if (findEnrollmentsError) {
+    console.error('❌ 수강권 조회 실패:', findEnrollmentsError)
     process.exit(1)
   }
 
-  if (!testEnrollments || testEnrollments.length === 0) {
+  // 2. E2E 테스트로 생성된 수업 찾기
+  const { data: testClasses, error: findClassesError } = await supabase
+    .from('classes')
+    .select('id, name')
+    .like('name', '%E2E%')
+
+  if (findClassesError) {
+    console.error('❌ 수업 조회 실패:', findClassesError)
+    process.exit(1)
+  }
+
+  if ((!testEnrollments || testEnrollments.length === 0) &&
+      (!testClasses || testClasses.length === 0)) {
     console.log('✅ 정리할 E2E 테스트 데이터가 없습니다')
     return
   }
 
-  console.log(`📋 발견된 E2E 수강권: ${testEnrollments.length}개`)
-  testEnrollments.forEach((e) => console.log(`  - ${e.name}`))
+  if (testEnrollments && testEnrollments.length > 0) {
+    console.log(`📋 발견된 E2E 수강권: ${testEnrollments.length}개`)
+    testEnrollments.forEach((e) => console.log(`  - ${e.name}`))
+  }
 
-  const enrollmentIds = testEnrollments.map((e) => e.id)
+  if (testClasses && testClasses.length > 0) {
+    console.log(`📋 발견된 E2E 수업: ${testClasses.length}개`)
+    testClasses.forEach((c) => console.log(`  - ${c.name}`))
+  }
+
+  const enrollmentIds = testEnrollments?.map((e) => e.id) || []
+  const classIds = testClasses?.map((c) => c.id) || []
 
   // 1. enrollment_students 삭제
   const { error: es_error } = await supabase
@@ -76,18 +96,35 @@ async function cleanup() {
   }
 
   // 3. enrollments 삭제
-  const { error: enr_error } = await supabase
-    .from('enrollments')
-    .delete()
-    .in('id', enrollmentIds)
+  if (enrollmentIds.length > 0) {
+    const { error: enr_error } = await supabase
+      .from('enrollments')
+      .delete()
+      .in('id', enrollmentIds)
 
-  if (enr_error) {
-    console.error('❌ enrollments 삭제 실패:', enr_error)
-  } else {
-    console.log('✅ enrollments 삭제 완료')
+    if (enr_error) {
+      console.error('❌ enrollments 삭제 실패:', enr_error)
+    } else {
+      console.log('✅ enrollments 삭제 완료')
+    }
   }
 
-  console.log(`\n🎉 테스트 정리 완료: ${testEnrollments.length}개 수강권 삭제됨`)
+  // 4. classes 삭제 (수강권 삭제 후 실행)
+  if (classIds.length > 0) {
+    const { error: class_error } = await supabase
+      .from('classes')
+      .delete()
+      .in('id', classIds)
+
+    if (class_error) {
+      console.error('❌ classes 삭제 실패:', class_error)
+    } else {
+      console.log('✅ classes 삭제 완료')
+    }
+  }
+
+  const totalDeleted = (testEnrollments?.length || 0) + (testClasses?.length || 0)
+  console.log(`\n🎉 테스트 정리 완료: ${testEnrollments?.length || 0}개 수강권, ${testClasses?.length || 0}개 수업 삭제됨`)
 }
 
 cleanup()
