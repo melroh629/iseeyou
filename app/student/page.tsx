@@ -121,11 +121,9 @@ export default function StudentDashboard() {
         <button className="px-4 py-2 font-medium text-primary border-b-2 border-primary">
           수강권
         </button>
-        <Link href="/student/bookings">
-          <button className="px-4 py-2 font-medium text-muted-foreground hover:text-foreground">
-            상품
-          </button>
-        </Link>
+        <button className="px-4 py-2 font-medium text-muted-foreground hover:text-foreground cursor-default">
+          상품
+        </button>
       </div>
 
       {/* 사용중 배지 */}
