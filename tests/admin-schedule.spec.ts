@@ -18,9 +18,10 @@ test.describe('관리자 일정 생성', () => {
     await page.locator('#name').fill(className)
     await page.locator('#description').fill('Playwright E2E 테스트용 수업입니다')
 
-    // 2. 수업 형태 - 그룹 수업 선택
-    // selectOption 사용 (value="group")
-    await page.locator('#type').selectOption('group')
+    // 2. 수업 형태 - 그룹 수업 선택 (Radix UI Select)
+    await page.locator('#type').click()
+    // "그룹 수업" 텍스트를 가진 option 클릭 (getByRole 사용)
+    await page.getByRole('option', { name: '그룹 수업' }).click()
 
     // 3. 최대 인원
     await page.locator('#maxStudents').fill('5')
@@ -38,7 +39,7 @@ test.describe('관리자 일정 생성', () => {
     await page.getByRole('button', { name: '기본 모드 (매주 반복)' }).click()
 
     // 6. 요일 선택 - 월요일 클릭
-    await page.getByRole('button', { name: '월' }).click()
+    await page.getByRole('button', { name: '월', exact: true }).click()
 
     // 7. 시간 입력 - 첫 번째 time input이 시작 시간, 두 번째가 종료 시간
     const timeInputs = page.locator('input[type="time"]')
@@ -73,7 +74,8 @@ test.describe('관리자 일정 생성', () => {
     await page.locator('#description').fill('월/수/금 수업')
 
     // 그룹 수업 선택
-    await page.locator('#type').selectOption('group')
+    await page.locator('#type').click()
+    await page.getByRole('option', { name: '그룹 수업' }).click()
     await page.locator('#maxStudents').fill('10')
 
     // 수업 기간
@@ -89,9 +91,9 @@ test.describe('관리자 일정 생성', () => {
     await page.getByRole('button', { name: '기본 모드 (매주 반복)' }).click()
 
     // 월, 수, 금 선택
-    await page.getByRole('button', { name: '월' }).click()
-    await page.getByRole('button', { name: '수' }).click()
-    await page.getByRole('button', { name: '금' }).click()
+    await page.getByRole('button', { name: '월', exact: true }).click()
+    await page.getByRole('button', { name: '수', exact: true }).click()
+    await page.getByRole('button', { name: '금', exact: true }).click()
 
     // 각 요일의 시간 입력
     // time input이 6개 생김 (월: 0,1 / 수: 2,3 / 금: 4,5)
