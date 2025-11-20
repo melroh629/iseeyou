@@ -1,25 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useRouter } from 'next/navigation'
 import { formatPhoneNumber } from '@/lib/utils/phone'
 import { useLogin } from '@/lib/hooks/use-login'
 
 export default function AdminLoginPage() {
-  const router = useRouter()
   const [phoneNumber, setPhoneNumber] = useState('')
   const [password, setPassword] = useState('')
   const { login, loading } = useLogin({ role: 'admin', redirectPath: '/admin' })
-
-  // 이미 로그인되어 있으면 메인으로 리다이렉트
-  useEffect(() => {
-    router.push('/')
-  }, [router])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()

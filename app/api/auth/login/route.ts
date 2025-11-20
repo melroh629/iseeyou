@@ -156,6 +156,9 @@ export async function POST(request: Request) {
       },
     })
 
+    // 쿠키 domain 설정 (서브도메인에서도 접근 가능하도록)
+    const cookieDomain = process.env.NODE_ENV === 'production' ? '.iseeyou.dog' : undefined
+
     // Access Token
     response.cookies.set('token', accessToken, {
       httpOnly: true,
@@ -163,6 +166,7 @@ export async function POST(request: Request) {
       sameSite: 'lax',
       maxAge: TOKEN_EXPIRATION.ACCESS_TOKEN_SECONDS,
       path: '/',
+      ...(cookieDomain && { domain: cookieDomain }),
     })
 
     // Refresh Token
@@ -172,6 +176,7 @@ export async function POST(request: Request) {
       sameSite: 'lax',
       maxAge: TOKEN_EXPIRATION.REFRESH_TOKEN_SECONDS,
       path: '/',
+      ...(cookieDomain && { domain: cookieDomain }),
     })
 
     return response
