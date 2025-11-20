@@ -48,14 +48,16 @@ test.describe('기능 이름', () => {
 
 2. `.env.test` 파일에 실제 테스트 계정 정보 입력:
    ```
-   TEST_STUDENT_PHONE=010-1234-5678
-   TEST_STUDENT_PASSWORD=testpassword123
+   TEST_STUDENT_PHONE=<하이픈 없는 학생 전화번호>
+   TEST_STUDENT_PASSWORD=<학생 비밀번호>
 
-   TEST_ADMIN_PHONE=010-9999-9999
-   TEST_ADMIN_PASSWORD=adminpassword123
+   TEST_ADMIN_PHONE=<하이픈 없는 관리자 전화번호>
+   TEST_ADMIN_PASSWORD=<관리자 비밀번호>
    ```
 
-3. Supabase에 테스트 계정 생성 (SQL 쿼리는 아래 참고)
+3. Supabase에 테스트 계정 생성:
+   - `tests/setup-test-accounts.sql` 파일 참고
+   - `scripts/generate-password-hash.ts`로 비밀번호 해시 생성
 
 **보안:** `.env.test` 파일은 `.gitignore`에 포함되어 GitHub에 업로드되지 않습니다.
 
