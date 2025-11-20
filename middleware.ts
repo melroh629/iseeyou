@@ -82,6 +82,30 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(adminUrl)
   }
 
+  // 학생 경로 보호
+  if (url.pathname.startsWith('/student')) {
+    // 로그인 페이지는 인증 불필요
+    if (url.pathname === '/student/login' || url.pathname === '/student/signup') {
+      // 이미 로그인되어 있으면 대시보드로
+      if (user && user.role === 'student') {
+        return NextResponse.redirect(new URL('/student', request.url))
+      }
+      return NextResponse.next()
+    }
+
+    // 학생 페이지는 인증 필요
+    if (!user) {
+      return NextResponse.redirect(new URL('/student/login', request.url))
+    }
+
+    // 학생 권한 확인
+    if (user.role !== 'student') {
+      const response = NextResponse.redirect(new URL('/student/login', request.url))
+      response.cookies.delete('token')
+      return response
+    }
+  }
+
   return NextResponse.next()
 }
 

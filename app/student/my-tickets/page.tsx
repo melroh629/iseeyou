@@ -11,6 +11,7 @@ interface Enrollment {
   name: string
   total_count: number
   used_count: number
+  confirmed_count: number
   valid_from: string
   valid_until: string
   status: string
@@ -21,9 +22,12 @@ interface Enrollment {
   }
 }
 
+type TicketFilter = 'all' | 'active' | 'expired' | 'suspended'
+
 export default function MyTicketsPage() {
   const [tickets, setTickets] = useState<Enrollment[]>([])
   const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState<TicketFilter>('active')
 
   useEffect(() => {
     fetchTickets()
@@ -64,6 +68,39 @@ export default function MyTicketsPage() {
     )
   }
 
+  // 필터링 로직
+  const filteredTickets = tickets.filter((ticket) => {
+    if (filter === 'all') return true
+
+    const dday = getDday(ticket.valid_until)
+    const isExpired = ticket.status === 'expired' || dday < 0
+
+    if (filter === 'active') {
+      return ticket.status === 'active' && !isExpired
+    }
+    if (filter === 'expired') {
+      return ticket.status === 'expired' || isExpired
+    }
+    if (filter === 'suspended') {
+      return ticket.status === 'suspended'
+    }
+    return true
+  })
+
+  // 각 탭별 개수 계산
+  const counts = {
+    all: tickets.length,
+    active: tickets.filter(t => {
+      const dday = getDday(t.valid_until)
+      return t.status === 'active' && dday >= 0
+    }).length,
+    expired: tickets.filter(t => {
+      const dday = getDday(t.valid_until)
+      return t.status === 'expired' || dday < 0
+    }).length,
+    suspended: tickets.filter(t => t.status === 'suspended').length,
+  }
+
   if (tickets.length === 0) {
     return (
       <div className="space-y-6">
@@ -85,12 +122,72 @@ export default function MyTicketsPage() {
         <p className="text-muted-foreground mt-1">총 {tickets.length}개의 수강권</p>
       </div>
 
-      <div className="grid gap-4">
-        {tickets.map((ticket) => {
-          const dday = getDday(ticket.valid_until)
-          const isExpiringSoon = dday <= 7 && dday > 0
-          const isExpired = ticket.status === 'expired' || dday < 0
-          const remainingCount = ticket.total_count - ticket.used_count
+      {/* 탭 */}
+      <div className="flex gap-2 border-b">
+        <button
+          onClick={() => setFilter('active')}
+          className={`px-4 py-2 font-medium transition-colors ${
+            filter === 'active'
+              ? 'text-primary border-b-2 border-primary'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          사용중 ({counts.active})
+        </button>
+        <button
+          onClick={() => setFilter('expired')}
+          className={`px-4 py-2 font-medium transition-colors ${
+            filter === 'expired'
+              ? 'text-primary border-b-2 border-primary'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          만료됨 ({counts.expired})
+        </button>
+        <button
+          onClick={() => setFilter('suspended')}
+          className={`px-4 py-2 font-medium transition-colors ${
+            filter === 'suspended'
+              ? 'text-primary border-b-2 border-primary'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          정지됨 ({counts.suspended})
+        </button>
+        <button
+          onClick={() => setFilter('all')}
+          className={`px-4 py-2 font-medium transition-colors ${
+            filter === 'all'
+              ? 'text-primary border-b-2 border-primary'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          전체 ({counts.all})
+        </button>
+      </div>
+
+      {/* 필터링된 수강권 목록 */}
+      {filteredTickets.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Ticket className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">
+              {filter === 'active' && '사용 중인 수강권이 없습니다'}
+              {filter === 'expired' && '만료된 수강권이 없습니다'}
+              {filter === 'suspended' && '정지된 수강권이 없습니다'}
+              {filter === 'all' && '수강권이 없습니다'}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4">
+          {filteredTickets.map((ticket) => {
+            const dday = getDday(ticket.valid_until)
+            const isExpiringSoon = dday <= 7 && dday > 0
+            const isExpired = ticket.status === 'expired' || dday < 0
+            const completedCount = ticket.used_count
+            const confirmedCount = ticket.confirmed_count || 0
+            const availableCount = Math.max(0, ticket.total_count - completedCount - confirmedCount)
 
           return (
             <Card
@@ -119,17 +216,28 @@ export default function MyTicketsPage() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* 사용 횟수 */}
-                <div className="flex items-center justify-between p-4 bg-accent/50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <Ticket className="h-5 w-5 text-muted-foreground" />
-                    <span className="font-medium">잔여 횟수</span>
+                {/* 이용 현황 */}
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div className="p-3 bg-accent/50 rounded-lg">
+                    <div className="text-xs text-muted-foreground mb-1">
+                      예약가능
+                    </div>
+                    <div className="text-xl font-bold">{availableCount}</div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold">
-                      {remainingCount}
-                      <span className="text-base font-normal text-muted-foreground">
-                        /{ticket.total_count}회
+                  <div className="p-3 bg-accent/50 rounded-lg">
+                    <div className="text-xs text-muted-foreground mb-1">
+                      취소가능
+                    </div>
+                    <div className="text-xl font-bold">{confirmedCount}</div>
+                  </div>
+                  <div className="p-3 bg-accent/50 rounded-lg">
+                    <div className="text-xs text-muted-foreground mb-1">
+                      잔여
+                    </div>
+                    <div className="text-xl font-bold">
+                      {completedCount}
+                      <span className="text-sm font-normal text-muted-foreground">
+                        /{ticket.total_count}
                       </span>
                     </div>
                   </div>
@@ -168,11 +276,11 @@ export default function MyTicketsPage() {
                   </div>
                 )}
 
-                {remainingCount === 0 && !isExpired && (
+                {availableCount === 0 && !isExpired && (
                   <div className="flex items-start gap-2 p-3 bg-muted rounded-lg">
                     <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <p className="text-sm text-muted-foreground">
-                      모든 횟수를 사용했습니다.
+                      예약 가능한 횟수가 없습니다. {confirmedCount > 0 && `(확정된 예약 ${confirmedCount}건)`}
                     </p>
                   </div>
                 )}
@@ -180,7 +288,8 @@ export default function MyTicketsPage() {
             </Card>
           )
         })}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

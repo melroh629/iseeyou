@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
       .from('enrollment_students')
       .select(`
         used_count,
+        enrollment_id,
         enrollments (
           id,
           name,
@@ -75,12 +76,41 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // 각 수강권별 확정 예약 수 조회
+    const enrollmentIds = (enrollmentStudents || []).map((es: any) => es.enrollment_id)
+    let bookingCountByEnrollment: Record<string, number> = {}
+
+    if (enrollmentIds.length > 0) {
+      const { data: confirmedBookings, error: bookingsError } = await supabaseAdmin
+        .from('bookings')
+        .select('enrollment_id')
+        .eq('student_id', student.id)
+        .eq('status', 'confirmed')
+        .in('enrollment_id', enrollmentIds)
+
+      if (bookingsError) {
+        console.error('예약 조회 실패:', bookingsError)
+      }
+
+      // 수강권별 확정 예약 수를 카운트
+      bookingCountByEnrollment = (confirmedBookings || []).reduce((acc: any, booking: any) => {
+        acc[booking.enrollment_id] = (acc[booking.enrollment_id] || 0) + 1
+        return acc
+      }, {})
+
+      console.log('수강권별 확정 예약 수:', bookingCountByEnrollment)
+    }
+
     // enrollment_students의 데이터를 프론트엔드 형식에 맞게 변환 및 정렬
     const tickets = (enrollmentStudents || [])
-      .map((es: any) => ({
-        ...es.enrollments,
-        used_count: es.used_count, // 개별 학생의 used_count
-      }))
+      .map((es: any) => {
+        const confirmedCount = bookingCountByEnrollment[es.enrollment_id] || 0
+        return {
+          ...es.enrollments,
+          used_count: es.used_count, // 개별 학생의 used_count (완료된 수업)
+          confirmed_count: confirmedCount, // 확정된 예약 수
+        }
+      })
       .sort((a, b) => {
         // status로 먼저 정렬 (active > expired > suspended)
         const statusOrder: any = { active: 0, expired: 1, suspended: 2 }
