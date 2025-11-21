@@ -1,4 +1,6 @@
+
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
+// Dashboard Page
 import { getCurrentUserFromServer } from "@/lib/auth/user";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, Users, Ticket, Settings } from "lucide-react";
