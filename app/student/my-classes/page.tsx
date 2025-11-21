@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Calendar } from '@/components/ui/calendar'
+import { Calendar as CalendarComponent } from '@/components/ui/calendar'
 import {
   Select,
   SelectContent,
@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Clock, Users, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Clock, Users, ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { fetchWithRefresh } from '@/lib/fetch-with-refresh'
 
@@ -216,7 +216,7 @@ export default function MyClassesPage() {
               </Button>
             </div>
 
-            <Calendar
+            <CalendarComponent
               mode="single"
               selected={selectedDate}
               onSelect={(date) => date && setSelectedDate(date)}
@@ -275,75 +275,70 @@ export default function MyClassesPage() {
               return (
                 <Card
                   key={booking.id}
-                  className={`transition-shadow ${
-                    booking.status === 'cancelled' ? 'opacity-60' : 'hover:shadow-md'
+                  className={`shadow-sm ${
+                    booking.status === 'cancelled' ? 'opacity-60' : 'hover:shadow-md transition-all'
                   }`}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      {/* 날짜 및 시간 */}
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className="text-center min-w-[80px]">
-                          <div className="text-lg font-bold">
-                            {schedule.start_time.slice(0, 5)} ~ {schedule.end_time.slice(0, 5)}
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {new Date(schedule.date).toLocaleDateString('ko-KR', {
-                              month: 'short',
-                              day: 'numeric',
-                              weekday: 'short',
-                            })}
-                          </div>
-                        </div>
-
-                        <div className="w-px bg-border h-16" />
-
-                        {/* 수업 정보 */}
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center gap-2">
-                            <div
-                              className="w-2 h-2 rounded-full"
-                              style={{
-                                backgroundColor: classInfo.color || '#3b82f6',
-                              }}
-                            />
-                            <span className="font-medium">{classInfo.name}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            <span>
-                              {Math.round(
-                                (new Date(`2000-01-01T${schedule.end_time}`).getTime() -
-                                  new Date(`2000-01-01T${schedule.start_time}`).getTime()) /
-                                  60000
-                              )}
-                              분
-                            </span>
-                          </div>
-                          {schedule.type === 'group' && schedule.max_students && (
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Users className="h-3 w-3" />
-                              <span>예약 {schedule.max_students}명</span>
-                            </div>
-                          )}
-                        </div>
+                  <CardContent className="p-5 space-y-4">
+                    {/* 수업명 & 상태 */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-2 flex-1 min-w-0">
+                        <div
+                          className="w-3 h-3 rounded-full shrink-0 mt-1.5"
+                          style={{
+                            backgroundColor: classInfo.color || '#3b82f6',
+                          }}
+                        />
+                        <h3 className="font-semibold text-lg">{classInfo.name}</h3>
                       </div>
-
-                      {/* 상태 배지 */}
-                      <div className="flex flex-col items-end gap-2">
-                        {getStatusBadge(booking.status)}
-                        {booking.status === 'confirmed' && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleCancelBooking(booking.id)}
-                            className="text-xs border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                          >
-                            예약취소
-                          </Button>
-                        )}
-                      </div>
+                      {getStatusBadge(booking.status)}
                     </div>
+
+                    {/* 날짜 & 시간 */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4 shrink-0" />
+                        <span>
+                          {new Date(schedule.date).toLocaleDateString('ko-KR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            weekday: 'short',
+                          })}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-base">
+                        <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="font-medium">
+                          {schedule.start_time.slice(0, 5)} - {schedule.end_time.slice(0, 5)}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          ({Math.round(
+                            (new Date(`2000-01-01T${schedule.end_time}`).getTime() -
+                              new Date(`2000-01-01T${schedule.start_time}`).getTime()) /
+                              60000
+                          )}분)
+                        </span>
+                      </div>
+                      {schedule.type === 'group' && schedule.max_students && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Users className="h-4 w-4 shrink-0" />
+                          <span>그룹 수업 (최대 {schedule.max_students}명)</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 취소 버튼 */}
+                    {booking.status === 'confirmed' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleCancelBooking(booking.id)}
+                        className="w-full h-11 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      >
+                        예약취소
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               )

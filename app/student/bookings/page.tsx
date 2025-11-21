@@ -180,6 +180,20 @@ export default function BookingsPage() {
     }
   }
 
+  // 현재 시간 (한국 시간 기준)
+  const now = new Date()
+  const currentDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+
+  // 수업이 지났는지 체크하는 함수
+  const isPastSchedule = (schedule: Schedule) => {
+    // 날짜가 오늘보다 이전이면 지남
+    if (schedule.date < currentDateStr) return true
+    // 오늘 날짜인데 종료 시간이 현재 시간보다 이전이면 지남
+    if (schedule.date === currentDateStr && schedule.end_time <= currentTime) return true
+    return false
+  }
+
   // 선택된 날짜의 수업 목록 (로컬 시간 기준으로 변환)
   const year = selectedDate.getFullYear()
   const month = String(selectedDate.getMonth() + 1).padStart(2, '0')
@@ -301,72 +315,73 @@ export default function BookingsPage() {
           </Card>
         ) : (
           <div className="space-y-3">
-            {schedulesForSelectedDate.map((schedule) => (
-              <Card key={schedule.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    {/* 시간 */}
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="text-center min-w-[80px]">
-                        <div className="text-lg font-bold">
-                          {schedule.start_time.slice(0, 5)} ~ {schedule.end_time.slice(0, 5)}
-                        </div>
-                      </div>
+            {schedulesForSelectedDate.map((schedule) => {
+              const isPast = isPastSchedule(schedule)
 
-                      <div className="w-px bg-border h-12" />
-
-                      {/* 수업 정보 */}
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-2 h-2 rounded-full"
-                            style={{
-                              backgroundColor: schedule.classes.color || '#3b82f6',
-                            }}
-                          />
-                          <span className="font-medium">{schedule.classes.name}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          <span>
-                            {schedule.start_time.slice(0, 5)} ({' '}
-                            {Math.round(
-                              (new Date(`2000-01-01T${schedule.end_time}`).getTime() -
-                                new Date(`2000-01-01T${schedule.start_time}`).getTime()) /
-                                60000
-                            )}
-                            분 )
-                          </span>
-                        </div>
-                        {schedule.type === 'group' && schedule.max_students && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Users className="h-3 w-3" />
-                            <span>
-                              {schedule._count?.bookings || 0}/{schedule.max_students}명
-                            </span>
-                          </div>
-                        )}
-                      </div>
+              return (
+                <Card
+                  key={schedule.id}
+                  className={`shadow-sm ${isPast ? 'opacity-60' : 'hover:shadow-md transition-all'}`}
+                >
+                  <CardContent className="p-5 space-y-4">
+                    {/* 수업명 */}
+                    <div className="flex items-start justify-between gap-3">
+                      <h3 className="font-semibold text-lg">{schedule.classes.name}</h3>
+                      <div
+                        className="w-3 h-3 rounded-full shrink-0 mt-1.5"
+                        style={{
+                          backgroundColor: schedule.classes.color || '#3b82f6',
+                        }}
+                      />
                     </div>
 
-                    {/* 예약 버튼 */}
-                    {schedule.isBooked ? (
-                      <Badge className="bg-blue-600 text-white min-w-[100px] justify-center">
+                    {/* 시간 & 정보 */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-base">
+                        <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="font-medium">
+                          {schedule.start_time.slice(0, 5)} - {schedule.end_time.slice(0, 5)}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          ({Math.round(
+                            (new Date(`2000-01-01T${schedule.end_time}`).getTime() -
+                              new Date(`2000-01-01T${schedule.start_time}`).getTime()) /
+                              60000
+                          )}분)
+                        </span>
+                      </div>
+                      {schedule.type === 'group' && schedule.max_students && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Users className="h-4 w-4 shrink-0" />
+                          <span>
+                            {schedule._count?.bookings || 0}/{schedule.max_students}명 예약
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 버튼 */}
+                    {isPast ? (
+                      <div className="bg-surface-1 rounded-lg px-4 py-3 text-center text-sm text-muted-foreground">
+                        예약 마감
+                      </div>
+                    ) : schedule.isBooked ? (
+                      <div className="bg-blue-50 rounded-lg px-4 py-3 text-center text-sm text-blue-700 font-medium">
                         예약완료
-                      </Badge>
+                      </div>
                     ) : (
                       <Button
                         onClick={() => openBookingDialog(schedule)}
                         disabled={!selectedEnrollment}
-                        className="min-w-[100px]"
+                        className="w-full h-11"
                       >
                         예약하기
                       </Button>
                     )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
         )}
       </div>
