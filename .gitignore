@@ -59,3 +59,8 @@ next-env.d.ts
 !public/**/*.webm
 !app/**/opengraph-image.png
 !app/**/twitter-image.png
+!docs/assets/**/*.png
+!docs/assets/**/*.PNG
+
+# Private documentation
+docs/private/
