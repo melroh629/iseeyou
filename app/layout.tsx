@@ -18,7 +18,9 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={inter.className}>
-        {children}
+        <div className="max-w-[1920px] mx-auto w-full">
+          {children}
+        </div>
         <Toaster />
       </body>
     </html>
