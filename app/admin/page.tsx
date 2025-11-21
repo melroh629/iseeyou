@@ -105,21 +105,21 @@ export default async function AdminDashboard() {
         <CardContent className="grid gap-4 md:grid-cols-3">
           <a
             href="/admin/students"
-            className="flex flex-col items-center justify-center p-6 border rounded-lg hover:bg-accent transition-colors"
+            className="flex flex-col items-center justify-center p-6 border rounded-lg hover:bg-accent transition-all active:scale-[0.98]"
           >
             <Users className="h-8 w-8 mb-2 text-primary" />
             <span className="font-medium">수강생 관리</span>
           </a>
           <a
             href="/admin/tickets"
-            className="flex flex-col items-center justify-center p-6 border rounded-lg hover:bg-accent transition-colors"
+            className="flex flex-col items-center justify-center p-6 border rounded-lg hover:bg-accent transition-all active:scale-[0.98]"
           >
             <Ticket className="h-8 w-8 mb-2 text-primary" />
             <span className="font-medium">수강권 발급</span>
           </a>
           <a
             href="/admin/settings"
-            className="flex flex-col items-center justify-center p-6 border rounded-lg hover:bg-accent transition-colors"
+            className="flex flex-col items-center justify-center p-6 border rounded-lg hover:bg-accent transition-all active:scale-[0.98]"
           >
             <Settings className="h-8 w-8 mb-2 text-primary" />
             <span className="font-medium">설정</span>
