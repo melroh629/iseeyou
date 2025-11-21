@@ -40,10 +40,10 @@ export function StudentSidebar() {
 
   return (
     <aside className="hidden md:flex w-20 lg:w-64 flex-col border-r bg-surface-2 h-screen sticky top-0">
-      <div className="p-6 flex items-center justify-center lg:justify-start">
+      <Link href="/student" className="p-6 flex items-center justify-center lg:justify-start hover:opacity-80 transition-opacity">
         <span className="font-bold text-xl text-primary hidden lg:block">ISeeYou</span>
         <span className="font-bold text-xl text-primary lg:hidden">ISY</span>
-      </div>
+      </Link>
       
       <nav className="flex-1 px-4 space-y-2 py-4">
         {navItems.map((item) => {

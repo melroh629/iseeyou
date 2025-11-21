@@ -1,5 +1,6 @@
 import { StudentSidebar } from "./_components/student-sidebar";
 import { MobileNav } from "./_components/mobile-nav";
+import Link from "next/link";
 
 export default function StudentLayout({
   children,
@@ -13,8 +14,10 @@ export default function StudentLayout({
 
       <div className="flex-1 flex flex-col min-h-screen">
         {/* Mobile Header */}
-        <header className="md:hidden border-b bg-surface-1 p-4 flex items-center justify-between sticky top-0 z-10">
-          <span className="font-bold text-lg">ISeeYou</span>
+        <header className="md:hidden border-b bg-background/80 backdrop-blur-md p-4 flex items-center justify-between sticky top-0 z-50">
+          <Link href="/student" className="font-bold text-lg text-primary hover:opacity-80 transition-opacity">
+            ISeeYou
+          </Link>
           <MobileNav />
         </header>
 
