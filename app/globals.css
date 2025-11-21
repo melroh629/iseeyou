@@ -4,75 +4,67 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%; /* M3 Surface */
-    --foreground: 222.2 47.4% 11.2%;
+    /* Brand: Vintage Navy & Clean White */
+    --background: 210 40% 98%; /* Soft Slate/Gray #f8fafc */
+    --foreground: 206 69% 19%; /* Deep Navy #0f3552 */
     
-    /* M3 Surface Tones */
-    --surface-1: 210 40% 96%;
-    --surface-2: 210 40% 94%;
-    --surface-3: 210 40% 92%;
-
-    --card: 210 40% 96%; /* Surface 1 for cards */
-    --card-foreground: 222.2 47.4% 11.2%;
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 206 69% 19%;
     
-    --popover: 210 40% 98%;
-    --popover-foreground: 222.2 47.4% 11.2%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 206 69% 19%;
     
-    --primary: 222.2 47.4% 11.2%; /* Keep brand color for now, or switch to M3 Purple/Blue? Keeping for consistency */
-    --primary-foreground: 210 40% 98%;
+    --primary: 206 69% 28%; /* Vintage Navy #164e78 */
+    --primary-foreground: 0 0% 100%; /* White text */
     
-    --secondary: 210 40% 90%; /* Darker surface for secondary */
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 210 40% 96%; /* Cool Light Gray (Neutral) */
+    --secondary-foreground: 206 69% 19%;
     
-    --muted: 210 40% 90%;
+    --muted: 210 40% 96%;
     --muted-foreground: 215.4 16.3% 46.9%;
     
-    --accent: 210 40% 90%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 210 40% 96%; /* Neutral Gray (Same as Secondary) - Removes Pink from general UI */
+    --accent-foreground: 206 69% 19%;
     
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 100% 78%; /* Cheek Pink #ff8e8e (Now used for warnings) */
+    --destructive-foreground: 206 69% 19%; /* Deep Navy text on Pink */
     
-    --border: 214.3 31.8% 85%; /* Slightly darker border */
-    --input: 214.3 31.8% 85%;
-    --ring: 222.2 47.4% 11.2%;
+    --border: 214.3 31.8% 91.4%; /* Light Gray Border */
+    --input: 214.3 31.8% 91.4%;
+    --ring: 206 69% 28%;
     
-    --radius: 1rem; /* M3 Rounded Corners (16px) */
+    --radius: 1rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Brand Dark: Deep Navy Theme (Keeping this as it fits the brand) */
+    --background: 206 65% 11%; /* Very Dark Navy */
+    --foreground: 210 40% 98%; /* Light Gray Text */
     
-    /* M3 Dark Surface Tones */
-    --surface-1: 222.2 84% 10%;
-    --surface-2: 222.2 84% 15%;
-    --surface-3: 222.2 84% 20%;
-
-    --card: 222.2 84% 10%;
+    --card: 206 58% 14%; /* Dark Navy Card */
     --card-foreground: 210 40% 98%;
     
-    --popover: 222.2 84% 4.9%;
+    --popover: 206 58% 14%;
     --popover-foreground: 210 40% 98%;
     
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 206 69% 28%;
+    --primary-foreground: 210 40% 98%;
     
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 206 40% 20%;
     --secondary-foreground: 210 40% 98%;
     
-    --muted: 217.2 32.6% 17.5%;
+    --muted: 206 40% 20%;
     --muted-foreground: 215 20.2% 65.1%;
     
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 206 40% 20%; /* Dark Neutral for Accent in Dark Mode */
     --accent-foreground: 210 40% 98%;
     
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 100% 78%; /* Cheek Pink for Destructive in Dark Mode too */
+    --destructive-foreground: 206 69% 19%;
     
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 206 40% 20%;
+    --input: 206 40% 20%;
+    --ring: 206 69% 28%;
   }
 }
 
