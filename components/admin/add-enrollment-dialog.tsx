@@ -7,6 +7,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useFormState } from '@/lib/hooks/use-form-state'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -61,13 +62,15 @@ export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}
   const [isUnassigned, setIsUnassigned] = useState(true) // true = 미할당 수강권, false = 직접 발급
   const [selectedStudents, setSelectedStudents] = useState<string[]>([])
 
-  const [formData, setFormData] = useState({
-    classId: '',
-    name: '',
-    totalCount: 10,
-    validFrom: new Date().toISOString().split('T')[0],
-    validUntil: '',
-    price: 0,
+  const { formData, handleChange, setValue, reset: resetForm } = useFormState({
+    initialValues: {
+      classId: '',
+      name: '',
+      totalCount: 10,
+      validFrom: new Date().toISOString().split('T')[0],
+      validUntil: '',
+      price: 0,
+    },
   })
 
   // 학생 목록, 수업 종류 불러오기
@@ -146,14 +149,7 @@ export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}
       setOpen(false)
       setIsUnassigned(true)
       setSelectedStudents([])
-      setFormData({
-        classId: '',
-        name: '',
-        totalCount: 10,
-        validFrom: new Date().toISOString().split('T')[0],
-        validUntil: '',
-        price: 0,
-      })
+      resetForm()
       router.refresh()
       if (onSuccess) onSuccess()
     } catch (err: any) {
@@ -272,9 +268,7 @@ export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}
               </Label>
               <Select
                 value={formData.classId}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, classId: value })
-                }
+                onValueChange={(value) => setValue('classId', value)}
                 disabled={loading}
               >
                 <SelectTrigger>
@@ -296,10 +290,9 @@ export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}
               </Label>
               <Input
                 id="name"
+                name="name"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={handleChange}
                 placeholder="예: 캐니크로스 10회권"
                 required
                 disabled={loading}
@@ -313,12 +306,11 @@ export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}
                 </Label>
                 <Input
                   id="totalCount"
+                  name="totalCount"
                   type="number"
                   min="1"
                   value={formData.totalCount}
-                  onChange={(e) =>
-                    setFormData({ ...formData, totalCount: parseInt(e.target.value) })
-                  }
+                  onChange={handleChange}
                   required
                   disabled={loading}
                 />
@@ -327,13 +319,11 @@ export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}
               <div className="grid gap-2">
                 <Label htmlFor="price">가격 (원)</Label>
                 <Input
-                  id="price"
+                  name="price"
                   type="number"
                   min="0"
                   value={formData.price}
-                  onChange={(e) =>
-                    setFormData({ ...formData, price: parseInt(e.target.value) })
-                  }
+                  onChange={handleChange}
                   disabled={loading}
                 />
               </div>
@@ -345,12 +335,10 @@ export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}
                   시작일 <span className="text-red-500">*</span>
                 </Label>
                 <Input
-                  id="validFrom"
+                  name="validFrom"
                   type="date"
                   value={formData.validFrom}
-                  onChange={(e) =>
-                    setFormData({ ...formData, validFrom: e.target.value })
-                  }
+                  onChange={handleChange}
                   required
                   disabled={loading}
                 />
@@ -361,12 +349,10 @@ export function AddEnrollmentDialog({ onSuccess }: AddEnrollmentDialogProps = {}
                   종료일 <span className="text-red-500">*</span>
                 </Label>
                 <Input
-                  id="validUntil"
+                  name="validUntil"
                   type="date"
                   value={formData.validUntil}
-                  onChange={(e) =>
-                    setFormData({ ...formData, validUntil: e.target.value })
-                  }
+                  onChange={handleChange}
                   required
                   disabled={loading}
                 />

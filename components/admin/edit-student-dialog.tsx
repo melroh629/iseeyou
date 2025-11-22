@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useFormState } from '@/lib/hooks/use-form-state'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
@@ -22,11 +23,11 @@ interface EditStudentDialogProps {
     id: string
     dog_name: string | null
     notes: string | null
-    users: {
+    users?: { // Made optional
       id: string
       name: string
       phone: string
-    }
+    } | null // Added null possibility
   }
 }
 
@@ -36,12 +37,23 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const [formData, setFormData] = useState({
-    name: student.users.name,
-    phone: student.users.phone,
-    dogName: student.dog_name || '',
-    notes: student.notes || '',
+  const { formData, handleChange, setValue, setFormData } = useFormState({
+    initialValues: {
+      name: student.users?.name || '',
+      phone: student.users?.phone || '',
+      dogName: student.dog_name || '',
+      notes: student.notes || '',
+    },
   })
+
+  useEffect(() => {
+    setFormData({
+      name: student.users?.name || '',
+      phone: student.users?.phone || '',
+      dogName: student.dog_name || '',
+      notes: student.notes || '',
+    });
+  }, [student, setFormData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,7 +63,7 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
     try {
       // users + students 테이블 동시 업데이트
       const [userResponse, studentResponse] = await Promise.all([
-        fetch(`/api/admin/users/${student.users.id}`, {
+        fetch(`/api/admin/users/${student.users?.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -110,10 +122,9 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
               <Label htmlFor="name">이름 *</Label>
               <Input
                 id="name"
+                name="name"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={handleChange}
                 required
                 disabled={loading}
               />
@@ -124,10 +135,9 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
               <Input
                 id="phone"
                 type="tel"
+                name="phone"
                 value={formData.phone}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
+                onChange={handleChange}
                 required
                 disabled={loading}
               />
@@ -137,10 +147,9 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
               <Label htmlFor="dogName">강아지 이름</Label>
               <Input
                 id="dogName"
+                name="dogName"
                 value={formData.dogName}
-                onChange={(e) =>
-                  setFormData({ ...formData, dogName: e.target.value })
-                }
+                onChange={handleChange}
                 disabled={loading}
               />
             </div>
@@ -149,10 +158,9 @@ export function EditStudentDialog({ student }: EditStudentDialogProps) {
               <Label htmlFor="notes">메모</Label>
               <Textarea
                 id="notes"
+                name="notes"
                 value={formData.notes}
-                onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
-                }
+                onChange={handleChange}
                 rows={3}
                 disabled={loading}
               />

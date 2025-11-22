@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useFormState } from '@/lib/hooks/use-form-state'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -37,14 +38,16 @@ export function EditEnrollmentDialog({ enrollment }: EditEnrollmentDialogProps) 
   const [error, setError] = useState('')
   const router = useRouter()
 
-  const [formData, setFormData] = useState({
-    name: enrollment.name,
-    totalCount: enrollment.total_count,
-    usedCount: enrollment.used_count,
-    validFrom: enrollment.valid_from,
-    validUntil: enrollment.valid_until,
-    price: enrollment.price || 0,
-    status: enrollment.status,
+  const { formData, handleChange, setValue, setFormData } = useFormState({
+    initialValues: {
+      name: enrollment.name,
+      totalCount: enrollment.total_count,
+      usedCount: enrollment.used_count,
+      validFrom: enrollment.valid_from,
+      validUntil: enrollment.valid_until,
+      price: enrollment.price || 0,
+      status: enrollment.status,
+    },
   })
 
   // 다이얼로그가 열릴 때마다 최신 데이터로 초기화
@@ -123,10 +126,9 @@ export function EditEnrollmentDialog({ enrollment }: EditEnrollmentDialogProps) 
               </Label>
               <Input
                 id="name"
+                name="name"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={handleChange}
                 placeholder="예: 캐니크로스 10회권"
                 required
                 disabled={loading}
@@ -140,12 +142,11 @@ export function EditEnrollmentDialog({ enrollment }: EditEnrollmentDialogProps) 
                 </Label>
                 <Input
                   id="totalCount"
+                  name="totalCount"
                   type="number"
                   min="1"
                   value={formData.totalCount}
-                  onChange={(e) =>
-                    setFormData({ ...formData, totalCount: parseInt(e.target.value) })
-                  }
+                  onChange={handleChange}
                   required
                   disabled={loading}
                 />
@@ -157,13 +158,12 @@ export function EditEnrollmentDialog({ enrollment }: EditEnrollmentDialogProps) 
                 </Label>
                 <Input
                   id="usedCount"
+                  name="usedCount"
                   type="number"
                   min="0"
                   max={formData.totalCount}
                   value={formData.usedCount}
-                  onChange={(e) =>
-                    setFormData({ ...formData, usedCount: parseInt(e.target.value) })
-                  }
+                  onChange={handleChange}
                   required
                   disabled={loading}
                 />
@@ -174,12 +174,11 @@ export function EditEnrollmentDialog({ enrollment }: EditEnrollmentDialogProps) 
               <Label htmlFor="price">가격 (원)</Label>
               <Input
                 id="price"
+                name="price"
                 type="number"
                 min="0"
                 value={formData.price}
-                onChange={(e) =>
-                  setFormData({ ...formData, price: parseInt(e.target.value) })
-                }
+                onChange={handleChange}
                 disabled={loading}
               />
             </div>
@@ -191,11 +190,10 @@ export function EditEnrollmentDialog({ enrollment }: EditEnrollmentDialogProps) 
                 </Label>
                 <Input
                   id="validFrom"
+                  name="validFrom"
                   type="date"
                   value={formData.validFrom}
-                  onChange={(e) =>
-                    setFormData({ ...formData, validFrom: e.target.value })
-                  }
+                  onChange={handleChange}
                   required
                   disabled={loading}
                 />
@@ -207,11 +205,10 @@ export function EditEnrollmentDialog({ enrollment }: EditEnrollmentDialogProps) 
                 </Label>
                 <Input
                   id="validUntil"
+                  name="validUntil"
                   type="date"
                   value={formData.validUntil}
-                  onChange={(e) =>
-                    setFormData({ ...formData, validUntil: e.target.value })
-                  }
+                  onChange={handleChange}
                   required
                   disabled={loading}
                 />
@@ -224,10 +221,9 @@ export function EditEnrollmentDialog({ enrollment }: EditEnrollmentDialogProps) 
               </Label>
               <select
                 id="status"
+                name="status"
                 value={formData.status}
-                onChange={(e) =>
-                  setFormData({ ...formData, status: e.target.value as any })
-                }
+                onChange={handleChange}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 required
                 disabled={loading}
