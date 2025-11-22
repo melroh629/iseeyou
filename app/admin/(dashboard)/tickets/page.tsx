@@ -271,17 +271,17 @@ export default function TicketsPage() {
   }
 
   return (
-    <div className="space-y-6 px-4 sm:px-6">
+    <div className="space-y-6 max-w-full overflow-x-hidden">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">수강권 관리</h1>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold truncate">수강권 관리</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base break-words">
             총 {enrollments.length}개의 수강권
             (미할당 {enrollments.filter(e => !e.students || e.students.length === 0).length}개,
             할당됨 {enrollments.filter(e => e.students && e.students.length > 0).length}개)
           </p>
         </div>
-        <Link href="/admin/tickets/new">
+        <Link href="/admin/tickets/new" className="w-full sm:w-auto">
           <Button className="w-full sm:w-auto">
             <Ticket className="h-4 w-4 mr-2" />
             수강권 생성
@@ -305,7 +305,7 @@ export default function TicketsPage() {
             return (
               <Card
                 key={enrollment.id}
-                className={`transition-all cursor-pointer ${
+                className={`transition-all cursor-pointer overflow-hidden ${
                   isExpired
                     ? 'opacity-50 bg-muted/30 hover:opacity-60'
                     : 'hover:shadow-lg'
@@ -316,25 +316,20 @@ export default function TicketsPage() {
                   }
                 }}
               >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="flex items-center gap-2">
-                        <Ticket className="h-5 w-5 text-primary" />
-                        {enrollment.name}
-                        {isExpired && (
-                          <span className="text-xs font-normal text-muted-foreground ml-1">
-                            (만료됨)
-                          </span>
-                        )}
-                      </CardTitle>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        수업: {enrollment.classes.name}
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Ticket className="h-4 w-4 text-primary shrink-0" />
+                        <span className="font-semibold truncate">{enrollment.name}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground truncate pl-6">
+                        {enrollment.classes.name}
                       </p>
                     </div>
-                    <div className="flex flex-col gap-2 items-end">
+                    <div className="flex flex-col gap-2 items-end shrink-0">
                       {(!enrollment.students || enrollment.students.length === 0) && (
-                        <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800 whitespace-nowrap">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 whitespace-nowrap font-medium">
                           미할당
                         </span>
                       )}
@@ -345,6 +340,7 @@ export default function TicketsPage() {
                             setEditForm({ ...editForm, status: e.target.value })
                           }
                           className="text-xs px-2 py-1 rounded-full border"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <option value="active">사용중</option>
                           <option value="expired">만료</option>
@@ -352,7 +348,7 @@ export default function TicketsPage() {
                         </select>
                       ) : (
                         <span
-                          className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${getStatusColor(
+                          className={`text-[10px] px-2 py-0.5 rounded-full whitespace-nowrap font-medium ${getStatusColor(
                             enrollment.status
                           )}`}
                         >
@@ -362,38 +358,32 @@ export default function TicketsPage() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-4">
                   {enrollment.students && enrollment.students.length > 0 ? (
-                    <div className="space-y-2">
-                      {enrollment.students.map((student) => (
-                        <div key={student.id} className="flex items-center gap-2 text-sm">
-                          <User className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">{student.users.name}</span>
-                          <span className="text-muted-foreground">
-                            {student.users.phone}
+                    <div className="bg-accent/30 p-3 rounded-lg">
+                      <div className="flex items-center gap-2 text-sm">
+                        <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <span className="font-medium truncate">
+                          {enrollment.students[0].users.name}
+                        </span>
+                        {enrollment.students.length > 1 && (
+                          <span className="text-muted-foreground text-xs shrink-0">
+                            외 {enrollment.students.length - 1}명
                           </span>
-                          <span className="text-xs text-muted-foreground ml-auto">
-                            ({student.used_count}/{enrollment.total_count}회)
-                          </span>
-                        </div>
-                      ))}
-                      {enrollment.students.length > 1 && (
-                        <div className="text-xs text-muted-foreground pt-1 border-t">
-                          총 {enrollment.students.length}명 등록
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   ) : isAssigning ? (
-                    <div className="space-y-2">
-                      <Label className="text-xs">학생 선택</Label>
+                    <div className="space-y-2 p-3 border rounded-lg bg-accent/10">
+                      <Label className="text-xs font-medium">학생 선택</Label>
                       <Select
                         value={assignForm.studentId}
                         onValueChange={(value) =>
                           setAssignForm({ studentId: value })
                         }
                       >
-                        <SelectTrigger className="h-8 text-sm">
-                          <SelectValue placeholder="학생 선택" />
+                        <SelectTrigger className="h-9 text-sm bg-background" onClick={(e) => e.stopPropagation()}>
+                          <SelectValue placeholder="학생을 선택하세요" />
                         </SelectTrigger>
                         <SelectContent>
                           {students.map((student) => (
@@ -405,151 +395,104 @@ export default function TicketsPage() {
                       </Select>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <User className="h-4 w-4" />
-                      <span>미할당 (미할당 수강권)</span>
+                    <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground py-4 border-2 border-dashed rounded-lg bg-accent/10">
+                      <User className="h-4 w-4 opacity-50" />
+                      <span>할당된 학생 없음</span>
                     </div>
                   )}
 
                   {isEditing ? (
-                    <div className="space-y-3">
+                    <div className="space-y-4 pt-2" onClick={(e) => e.stopPropagation()}>
                       <div>
-                        <Label className="text-xs">수강권 이름</Label>
+                        <Label className="text-xs mb-1.5 block">수강권 이름</Label>
                         <Input
                           value={editForm.name}
                           onChange={(e) =>
                             setEditForm({ ...editForm, name: e.target.value })
                           }
-                          className="h-8 text-sm"
+                          className="h-9 text-sm"
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <Label className="text-xs">총 횟수</Label>
+                          <Label className="text-xs mb-1.5 block">총 횟수</Label>
                           <Input
                             type="number"
                             value={editForm.totalCount}
                             onChange={(e) =>
                               setEditForm({ ...editForm, totalCount: parseInt(e.target.value) })
                             }
-                            className="h-8 text-sm"
+                            className="h-9 text-sm"
                           />
                         </div>
                         <div>
-                          <Label className="text-xs">가격</Label>
+                          <Label className="text-xs mb-1.5 block">가격</Label>
                           <Input
                             type="number"
                             value={editForm.price}
                             onChange={(e) =>
                               setEditForm({ ...editForm, price: parseInt(e.target.value) })
                             }
-                            className="h-8 text-sm"
+                            className="h-9 text-sm"
                           />
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <Label className="text-xs">시작일</Label>
+                          <Label className="text-xs mb-1.5 block">시작일</Label>
                           <Input
                             type="date"
                             value={editForm.validFrom}
                             onChange={(e) =>
                               setEditForm({ ...editForm, validFrom: e.target.value })
                             }
-                            className="h-8 text-sm"
+                            className="h-9 text-sm"
                           />
                         </div>
                         <div>
-                          <Label className="text-xs">종료일</Label>
+                          <Label className="text-xs mb-1.5 block">종료일</Label>
                           <Input
                             type="date"
                             value={editForm.validUntil}
                             onChange={(e) =>
                               setEditForm({ ...editForm, validUntil: e.target.value })
                             }
-                            className="h-8 text-sm"
+                            className="h-9 text-sm"
                           />
                         </div>
                       </div>
-
-                      {/* 학생 선택 섹션 */}
-                      <div className="border-t pt-3">
-                        <Label className="text-xs mb-2 block">등록 학생 관리</Label>
-                        <div className="border rounded-md max-h-[150px] overflow-y-auto">
-                          {students.length === 0 ? (
-                            <p className="p-2 text-xs text-muted-foreground text-center">
-                              등록된 학생이 없습니다
-                            </p>
-                          ) : (
-                            <div className="divide-y">
-                              {students.map((student) => (
-                                <div
-                                  key={student.id}
-                                  className="flex items-center gap-2 p-2 hover:bg-accent transition-colors"
-                                >
-                                  <Checkbox
-                                    id={`edit-${student.id}`}
-                                    checked={editingStudents.includes(student.id)}
-                                    onCheckedChange={() => toggleEditingStudent(student.id)}
-                                  />
-                                  <label
-                                    htmlFor={`edit-${student.id}`}
-                                    className="flex-1 cursor-pointer text-xs"
-                                  >
-                                    <div className="font-medium">{student.users.name}</div>
-                                  </label>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        {editingStudents.length > 0 && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {editingStudents.length}명 선택됨
-                          </p>
-                        )}
-                      </div>
                     </div>
                   ) : (
-                    <>
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm text-muted-foreground">남은 횟수</div>
-                        <div className="text-lg font-bold">
-                          {enrollment.total_count - enrollment.used_count}
-                          <span className="text-sm text-muted-foreground font-normal">
+                    <div className="space-y-3 pt-1">
+                      <div className="flex items-center justify-between p-2 bg-accent/20 rounded">
+                        <span className="text-sm text-muted-foreground">남은 횟수</span>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-lg font-bold text-primary">
+                            {enrollment.total_count - enrollment.used_count}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
                             /{enrollment.total_count}회
                           </span>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
-                        <span>
-                          {new Date(enrollment.valid_from).toLocaleDateString('ko-KR', {
-                            month: 'short',
-                            day: 'numeric',
-                          })}{' '}
-                          ~{' '}
-                          {new Date(enrollment.valid_until).toLocaleDateString('ko-KR', {
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2 text-sm">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span className={enrollment.status === 'expired' ? 'text-red-500' : ''}>
-                          {getDday(enrollment.valid_until)}
-                        </span>
-                      </div>
-
-                      {enrollment.price && (
-                        <div className="text-sm text-muted-foreground pt-2 border-t">
-                          {enrollment.price.toLocaleString()}원
+                      <div className="flex flex-col gap-1 sm:grid sm:grid-cols-2 sm:gap-2 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="h-3.5 w-3.5 shrink-0" />
+                          <span className="truncate">
+                            {new Date(enrollment.valid_from).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })}
+                            ~
+                            {new Date(enrollment.valid_until).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })}
+                          </span>
                         </div>
-                      )}
-                    </>
+                        <div className="flex items-center gap-1.5 sm:justify-end">
+                          <Clock className="h-3.5 w-3.5 shrink-0" />
+                          <span className={enrollment.status === 'expired' ? 'text-destructive font-medium' : 'font-medium text-primary'}>
+                            {getDday(enrollment.valid_until)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   )}
 
                   <div className="pt-2 flex gap-2" onClick={(e) => e.stopPropagation()}>
@@ -558,7 +501,7 @@ export default function TicketsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-1"
+                          className="flex-1 h-9"
                           onClick={cancelEdit}
                         >
                           <X className="h-4 w-4 mr-1" />
@@ -566,7 +509,7 @@ export default function TicketsPage() {
                         </Button>
                         <Button
                           size="sm"
-                          className="flex-1"
+                          className="flex-1 h-9"
                           onClick={() => saveEdit(enrollment.id)}
                         >
                           <Check className="h-4 w-4 mr-1" />
@@ -578,7 +521,7 @@ export default function TicketsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-1"
+                          className="flex-1 h-9"
                           onClick={cancelAssign}
                         >
                           <X className="h-4 w-4 mr-1" />
@@ -586,7 +529,7 @@ export default function TicketsPage() {
                         </Button>
                         <Button
                           size="sm"
-                          className="flex-1"
+                          className="flex-1 h-9"
                           onClick={() => saveAssign(enrollment.id)}
                         >
                           <Check className="h-4 w-4 mr-1" />
@@ -598,18 +541,22 @@ export default function TicketsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-1"
+                          className="flex-1 h-9 hover:bg-accent hover:text-accent-foreground"
                           onClick={() => startEdit(enrollment)}
                         >
-                          <Pencil className="h-4 w-4 mr-1" />
+                          <Pencil className="h-3.5 w-3.5 mr-1.5" />
                           수정
                         </Button>
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
-                          onClick={() => setDeletingId(enrollment.id)}
+                          className="h-9 px-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setDeletingId(enrollment.id)
+                          }}
                         >
-                          <Trash2 className="h-4 w-4 text-red-500" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </>
                     )}

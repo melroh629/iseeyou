@@ -29,7 +29,7 @@ export function ScheduleCard({ schedule }: ScheduleCardProps) {
 
   return (
     <div className="bg-card rounded-lg shadow-sm p-4">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+      <div className="flex flex-col items-start sm:flex-row sm:items-center gap-3 sm:gap-6">
         {/* 시간 */}
         <div className="flex items-center gap-2 sm:min-w-[140px]">
           <Clock className="h-4 w-4 text-muted-foreground" />

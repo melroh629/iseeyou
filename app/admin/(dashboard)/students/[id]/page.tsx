@@ -77,17 +77,20 @@ export default async function StudentDetailPage({ params }: { params: { id: stri
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* 헤더 */}
-      <div className="flex items-center gap-4">
-        <Link href="/admin/students">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold">{studentInfo.users.name}</h1>
-          <p className="text-muted-foreground mt-1">수강생 상세 정보</p>
+      {/* 헤더 */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <div className="flex items-center gap-2">
+          <Link href="/admin/students">
+            <Button variant="ghost" size="icon" className="-ml-2">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-xl sm:text-3xl font-bold">{studentInfo.users.name}</h1>
+            <p className="text-sm text-muted-foreground mt-1">수강생 상세 정보</p>
+          </div>
         </div>
-        <Button variant="outline">
+        <Button variant="outline" className="w-full sm:w-auto">
           수정
         </Button>
       </div>

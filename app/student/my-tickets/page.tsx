@@ -123,7 +123,7 @@ export default function MyTicketsPage() {
       </div>
 
       {/* 탭 */}
-      <div className="flex gap-2 border-b">
+      <div className="flex gap-2 border-b overflow-x-auto scrollbar-hide">
         <button
           onClick={() => setFilter('active')}
           className={`px-4 py-2 font-medium transition-colors ${
