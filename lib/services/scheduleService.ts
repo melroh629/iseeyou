@@ -245,5 +245,57 @@ export const deleteSchedule = async (id: string) => {
   return { success: true };
 };
 
+/**
+ * 스케줄 ID로 단일 스케줄 상세 정보를 조회하는 서비스 함수
+ * @param {string} scheduleId - 조회할 스케줄 ID
+ */
+export const getScheduleById = async (scheduleId: string) => {
+  if (!scheduleId) {
+    throw new Error('스케줄 ID가 필요합니다.');
+  }
 
-  
+  const supabaseAdmin = getSupabaseAdmin();
+
+  const { data: schedule, error } = await supabaseAdmin
+    .from('schedules')
+    .select(
+      `
+      id,
+      date,
+      start_time,
+      end_time,
+      type,
+      max_students,
+      status,
+      classes (
+        id,
+        name,
+        color
+      ),
+      bookings (
+        id,
+        status,
+        students (
+          id,
+          users (
+            name,
+            phone
+          )
+        )
+      )
+    `
+    )
+    .eq('id', scheduleId)
+    .single();
+
+  if (error) {
+    console.error('스케줄 상세 조회 실패:', error);
+    throw new Error('스케줄 상세 조회에 실패했습니다.');
+  }
+
+  if (!schedule) {
+    throw new Error('스케줄을 찾을 수 없습니다.');
+  }
+
+  return schedule;
+};
