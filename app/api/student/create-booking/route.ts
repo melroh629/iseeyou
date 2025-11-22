@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { verifyToken } from '@/lib/auth/jwt'
+import { handleApiError } from '@/lib/api-handler'
 
 export const dynamic = 'force-dynamic'
 
@@ -198,11 +199,7 @@ export async function POST(request: NextRequest) {
       booking,
       message: '수업이 예약되었습니다.',
     })
-  } catch (error: any) {
-    console.error('예약 생성 에러:', error)
-    return NextResponse.json(
-      { error: error.message || '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
+  } catch (error) {
+    return handleApiError(error, '예약 생성 에러')
   }
 }

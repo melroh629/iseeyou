@@ -1,15 +1,16 @@
 import { NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { verifyPassword } from '@/lib/auth/password'
-import { sign } from 'jsonwebtoken'
+import { generateToken } from '@/lib/auth/jwt'
 import { rateLimiter, getClientIP } from '@/lib/auth/rate-limiter'
 import { createRefreshToken } from '@/lib/auth/refresh-token'
 import { TOKEN_EXPIRATION, RATE_LIMIT } from '@/lib/constants/auth'
+import { handleApiError } from '@/lib/api-handler'
 
 const JWT_SECRET = process.env.JWT_SECRET!
 
 export async function POST(request: Request) {
-  try {
+  return handleApiError(async () => {
     const supabaseAdmin = getSupabaseAdmin()
     const body = await request.json()
     const { phone, password, role } = body
@@ -131,15 +132,12 @@ export async function POST(request: Request) {
     }
 
     // Access Token 생성
-    const accessToken = sign(
-      {
-        userId: user.id,
-        role: user.role,
-        studentId: studentId,
-      },
-      JWT_SECRET,
-      { expiresIn: TOKEN_EXPIRATION.ACCESS_TOKEN }
-    )
+    const accessToken = await generateToken({
+      userId: user.id,
+      phone: user.phone,
+      role: user.role,
+      studentId: studentId,
+    })
 
     // Refresh Token 생성 (30일 유효)
     const userAgent = request.headers.get('user-agent') || undefined
@@ -180,11 +178,5 @@ export async function POST(request: Request) {
     })
 
     return response
-  } catch (error: any) {
-    console.error('로그인 에러:', error)
-    return NextResponse.json(
-      { error: error.message || '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
-  }
+  }, '로그인 에러')
 }

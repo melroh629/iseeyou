@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { hashPassword, verifyPassword, validatePassword } from '@/lib/auth/password'
-import { verify } from 'jsonwebtoken'
+import { verifyToken } from '@/lib/auth/jwt'
 import { cookies } from 'next/headers'
+import { handleApiError } from '@/lib/api-handler'
 
 const JWT_SECRET = process.env.JWT_SECRET!
 
 export async function POST(request: Request) {
-  try {
+  return handleApiError(async () => {
     const supabaseAdmin = getSupabaseAdmin()
     const body = await request.json()
     const { currentPassword, newPassword } = body
@@ -29,12 +30,11 @@ export async function POST(request: Request) {
     }
 
     let userId: string
-    try {
-      const decoded = verify(token, JWT_SECRET) as { userId: string }
-      userId = decoded.userId
-    } catch {
+    const decoded = await verifyToken(token)
+    if (!decoded) {
       return NextResponse.json({ error: '유효하지 않은 토큰입니다.' }, { status: 401 })
     }
+    userId = decoded.userId
 
     // 사용자 조회
     const { data: user, error: userError } = await supabaseAdmin
@@ -94,11 +94,5 @@ export async function POST(request: Request) {
       success: true,
       message: '비밀번호가 성공적으로 변경되었습니다.',
     })
-  } catch (error: any) {
-    console.error('비밀번호 변경 에러:', error)
-    return NextResponse.json(
-      { error: error.message || '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
-  }
+  }, '비밀번호 변경 에러')
 }

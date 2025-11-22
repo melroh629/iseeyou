@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
+import { handleApiError } from '@/lib/api-handler'
 
 export async function GET() {
   try {
@@ -18,12 +19,8 @@ export async function GET() {
     }
 
     return NextResponse.json({ classTypes })
-  } catch (error: any) {
-    console.error('수업 종류 조회 에러:', error)
-    return NextResponse.json(
-      { error: error.message || '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
+  } catch (error) {
+    return handleApiError(error, '수업 종류 조회 에러')
   }
 }
 
@@ -64,12 +61,8 @@ export async function POST(request: NextRequest) {
       success: true,
       classType: newClassType,
     })
-  } catch (error: any) {
-    console.error('수업 생성 에러:', error)
-    return NextResponse.json(
-      { error: error.message || '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
+  } catch (error) {
+    return handleApiError(error, '수업 생성 에러')
   }
 }
 
@@ -121,12 +114,8 @@ export async function PATCH(request: NextRequest) {
       success: true,
       classType: updatedClassType,
     })
-  } catch (error: any) {
-    console.error('수업 수정 에러:', error)
-    return NextResponse.json(
-      { error: error.message || '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
+  } catch (error) {
+    return handleApiError(error, '수업 수정 에러')
   }
 }
 
@@ -160,11 +149,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({
       success: true,
     })
-  } catch (error: any) {
-    console.error('수업 삭제 에러:', error)
-    return NextResponse.json(
-      { error: error.message || '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
+  } catch (error) {
+    return handleApiError(error, '수업 삭제 에러')
   }
 }

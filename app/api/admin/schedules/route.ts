@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { Schedule, Booking } from '@/types/schedule'
+import { handleApiError } from '@/lib/api-handler'
 
 export async function GET(request: NextRequest) {
-  try {
+  return handleApiError(async () => {
     const supabaseAdmin = getSupabaseAdmin()
     const { searchParams } = new URL(request.url)
     const classId = searchParams.get('classId')
@@ -64,17 +65,11 @@ export async function GET(request: NextRequest) {
     }))
 
     return NextResponse.json({ schedules: schedulesWithCount })
-  } catch (error: any) {
-    console.error('일정 조회 에러:', error)
-    return NextResponse.json(
-      { error: error.message || '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
-  }
+  }, '일정 조회 에러')
 }
 
 export async function POST(request: NextRequest) {
-  try {
+  return handleApiError(async () => {
     const supabaseAdmin = getSupabaseAdmin()
     const { classId, date, startTime, endTime, type, maxStudents, studentId, notes } =
       await request.json()
@@ -149,17 +144,11 @@ export async function POST(request: NextRequest) {
       success: true,
       class: newClass,
     })
-  } catch (error: any) {
-    console.error('수업 생성 에러:', error)
-    return NextResponse.json(
-      { error: error.message || '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
-  }
+  }, '수업 생성 에러')
 }
 
 export async function PATCH(request: NextRequest) {
-  try {
+  return handleApiError(async () => {
     const supabaseAdmin = getSupabaseAdmin()
     const { id, classId, date, startTime, endTime, type, maxStudents, notes } =
       await request.json()
@@ -208,17 +197,11 @@ export async function PATCH(request: NextRequest) {
       success: true,
       class: updatedClass,
     })
-  } catch (error: any) {
-    console.error('일정 수정 에러:', error)
-    return NextResponse.json(
-      { error: error.message || '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
-  }
+  }, '일정 수정 에러')
 }
 
 export async function DELETE(request: NextRequest) {
-  try {
+  return handleApiError(async () => {
     const supabaseAdmin = getSupabaseAdmin()
     const { id } = await request.json()
 
@@ -247,11 +230,5 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({
       success: true,
     })
-  } catch (error: any) {
-    console.error('일정 삭제 에러:', error)
-    return NextResponse.json(
-      { error: error.message || '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
-  }
+  }, '일정 삭제 에러')
 }

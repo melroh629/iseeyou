@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { hashPassword, validatePassword } from '@/lib/auth/password'
 import { v4 as uuidv4 } from 'uuid'
+import { handleApiError } from '@/lib/api-handler'
 
 export async function POST(request: Request) {
   try {
@@ -101,11 +102,7 @@ export async function POST(request: Request) {
       success: true,
       message: '회원가입이 완료되었습니다.',
     })
-  } catch (error: any) {
-    console.error('회원가입 에러:', error)
-    return NextResponse.json(
-      { error: error.message || '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
+  } catch (error) {
+    return handleApiError(error, '회원가입 에러')
   }
 }

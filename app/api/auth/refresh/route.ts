@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { verifyRefreshToken } from '@/lib/auth/refresh-token'
-import { sign } from 'jsonwebtoken'
+import { generateToken } from '@/lib/auth/jwt'
 import { cookies } from 'next/headers'
 import { TOKEN_EXPIRATION } from '@/lib/constants/auth'
+import { handleApiError } from '@/lib/api-handler'
 
 // Next.js Route Segment Config
 export const dynamic = 'force-dynamic'
@@ -15,7 +16,7 @@ const JWT_SECRET = process.env.JWT_SECRET!
  * Refresh Token을 사용하여 새로운 Access Token 발급
  */
 export async function POST(request: Request) {
-  try {
+  return handleApiError(async () => {
     const cookieStore = await cookies()
     const refreshToken = cookieStore.get('refresh_token')?.value
 
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
     const supabase = getSupabaseAdmin()
     const { data: user, error } = await supabase
       .from('users')
-      .select('id, role')
+      .select('id, role, phone')
       .eq('id', verification.userId)
       .single()
 
@@ -61,15 +62,12 @@ export async function POST(request: Request) {
     }
 
     // 새로운 Access Token 생성
-    const newAccessToken = sign(
-      {
-        userId: user.id,
-        role: user.role,
-        studentId: studentId,
-      },
-      JWT_SECRET,
-      { expiresIn: TOKEN_EXPIRATION.ACCESS_TOKEN }
-    )
+    const newAccessToken = await generateToken({
+      userId: user.id,
+      phone: user.phone,
+      role: user.role,
+      studentId: studentId,
+    })
 
     // 쿠키에 새 Access Token 저장
     const response = NextResponse.json({
@@ -86,11 +84,5 @@ export async function POST(request: Request) {
     })
 
     return response
-  } catch (error: any) {
-    console.error('Token 갱신 에러:', error)
-    return NextResponse.json(
-      { error: error.message || '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
-  }
+  }, 'Token 갱신 에러')
 }

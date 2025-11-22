@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { verifyToken } from '@/lib/auth/jwt'
+import { handleApiError } from '@/lib/api-handler'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
-  try {
+  return handleApiError(async () => {
     // JWT 토큰에서 사용자 정보 가져오기
     const token = request.cookies.get('token')?.value
     if (!token) {
@@ -49,17 +50,11 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ profile: student })
-  } catch (error: any) {
-    console.error('프로필 조회 에러:', error)
-    return NextResponse.json(
-      { error: error.message || '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
-  }
+  }, '프로필 조회 에러')
 }
 
 export async function PUT(request: NextRequest) {
-  try {
+  return handleApiError(async () => {
     // JWT 토큰에서 사용자 정보 가져오기
     const token = request.cookies.get('token')?.value
     if (!token) {
@@ -109,11 +104,5 @@ export async function PUT(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true })
-  } catch (error: any) {
-    console.error('프로필 업데이트 에러:', error)
-    return NextResponse.json(
-      { error: error.message || '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
-  }
+  }, '프로필 업데이트 에러')
 }

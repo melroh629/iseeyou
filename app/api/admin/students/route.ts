@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { cleanPhoneNumber, formatPhoneNumber } from '@/lib/sms/coolsms'
 import crypto from 'crypto'
+import { handleApiError } from '@/lib/api-handler'
 
 // GET: 학생 목록 조회
 export async function GET() {
@@ -27,12 +28,8 @@ export async function GET() {
     }
 
     return NextResponse.json({ students })
-  } catch (error: any) {
-    console.error('학생 목록 조회 에러:', error)
-    return NextResponse.json(
-      { error: error.message || '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
+  } catch (error) {
+    return handleApiError(error, '학생 목록 조회 에러')
   }
 }
 
@@ -114,11 +111,7 @@ export async function POST(request: NextRequest) {
       success: true,
       student: newStudent,
     })
-  } catch (error: any) {
-    console.error('수강생 추가 에러:', error)
-    return NextResponse.json(
-      { error: error.message || '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
+  } catch (error) {
+    return handleApiError(error, '수강생 추가 에러')
   }
 }

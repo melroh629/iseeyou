@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
+import { handleApiError } from '@/lib/api-handler'
 
 export async function POST(request: NextRequest) {
-  try {
+  return handleApiError(async () => {
     const supabaseAdmin = getSupabaseAdmin()
     const {
       studentIds, // 배열로 변경! (여러 학생 지원)
@@ -101,11 +102,5 @@ export async function POST(request: NextRequest) {
       success: true,
       enrollment: newEnrollment,
     })
-  } catch (error: any) {
-    console.error('수강권 생성 에러:', error)
-    return NextResponse.json(
-      { error: error.message || '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
-  }
+  }, '수강권 생성 에러')
 }

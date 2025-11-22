@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
+import { handleApiError } from '@/lib/api-handler'
 
 export async function POST(request: NextRequest) {
-  try {
+  return handleApiError(async () => {
     const supabaseAdmin = getSupabaseAdmin()
     const { classId, date, startTime, endTime, type, maxStudents, studentId, notes } =
       await request.json()
@@ -77,11 +78,5 @@ export async function POST(request: NextRequest) {
       success: true,
       class: newClass,
     })
-  } catch (error: any) {
-    console.error('수업 생성 에러:', error)
-    return NextResponse.json(
-      { error: error.message || '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
-  }
+  }, '수업 생성 에러')
 }

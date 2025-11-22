@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { verifyToken } from '@/lib/auth/jwt'
+import { handleApiError } from '@/lib/api-handler'
 
 export const dynamic = 'force-dynamic'
 
@@ -132,11 +133,7 @@ export async function GET(request: NextRequest) {
         ticketsCount: tickets.length
       }
     })
-  } catch (error: any) {
-    console.error('수강권 조회 에러:', error)
-    return NextResponse.json(
-      { error: error.message || '서버 오류가 발생했습니다.' },
-      { status: 500 }
-    )
+  } catch (error) {
+    return handleApiError(error, '수강권 조회 에러')
   }
 }
