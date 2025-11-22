@@ -100,12 +100,9 @@ export default function StudentDashboard() {
       {/* 인사말 */}
       <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-6">
         <h1 className="text-2xl font-bold mb-2">
-          {activeTickets.length > 0 && activeTickets[0].classes.name
-            ? `반려견`
-            : '반려견'}{' '}
-          보호자님, 안녕하세요! 👋
+          {/* TODO: 반려동물 이름으로 변경 */}보호자님, 반가워요!
         </h1>
-        <p className="text-muted-foreground">오늘도 즐거운 훈련 되세요</p>
+        <p className="text-muted-foreground">오늘은 어떤 수업을 들으시나요?</p>
       </div>
 
       {/* 헤더 */}
@@ -121,11 +118,11 @@ export default function StudentDashboard() {
         <button className="px-4 py-2 font-medium text-primary border-b-2 border-primary">
           수강권
         </button>
-        <Link href="/student/bookings">
+        {/* <Link href="/student/bookings">
           <button className="px-4 py-2 font-medium text-muted-foreground hover:text-foreground">
             상품
           </button>
-        </Link>
+        </Link> */}
       </div>
 
       {/* 사용중 배지 */}
