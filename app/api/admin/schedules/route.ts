@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabaseAdmin } from '@/lib/supabase-admin'
-import { Schedule, Booking } from '@/types/schedule'
 import { handleApiError } from '@/lib/api-handler'
-
-import { getSchedules } from '@/lib/services/scheduleService';
+import {
+  getSchedules,
+  createSchedule,
+  updateSchedule,
+  deleteSchedule,
+} from '@/lib/services/scheduleService';
 
 export async function GET(request: NextRequest) {
   return handleApiError(async () => {
@@ -17,13 +19,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ schedules });
   }, '일정 조회 에러')
 }
-
-import {
-  getSchedules,
-  createSchedule,
-  updateSchedule,
-  deleteSchedule,
-} from '@/lib/services/scheduleService';
 
 export async function PATCH(request: NextRequest) {
   return handleApiError(async () => {
