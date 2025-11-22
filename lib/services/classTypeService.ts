@@ -117,28 +117,7 @@ export const updateClassType = async (classTypeData: {
   return updatedClassType;
 };
 
-/**
- * 수업 유형을 삭제하는 서비스 함수
- * @param {string} id - 삭제할 수업 유형 ID
- */
-export const deleteClassType = async (id: string) => {
-  // 필수 필드 검증
-  if (!id) {
-    throw new Error('수업 ID가 필요합니다.');
-  }
 
-  const supabaseAdmin = getSupabaseAdmin();
-
-  // 수업 종류 삭제
-  const { error } = await supabaseAdmin.from('classes').delete().eq('id', id);
-
-  if (error) {
-    console.error('수업 삭제 실패:', error);
-    throw new Error('수업 삭제에 실패했습니다.');
-  }
-
-  return { success: true };
-};
 
 /**
  * 수업 유형을 삭제하는 서비스 함수
