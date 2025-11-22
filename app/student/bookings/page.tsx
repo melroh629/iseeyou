@@ -1,61 +1,13 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Calendar } from '@/components/ui/calendar'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { Clock, Users, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { fetchWithRefresh } from '@/lib/fetch-with-refresh'
-
-interface Schedule {
-  id: string
-  date: string
-  start_time: string
-  end_time: string
-  type: string
-  max_students: number | null
-  status: string
-  classes: {
-    id: string
-    name: string
-    color: string | null
-  }
-  _count?: {
-    bookings: number
-  }
-  isBooked?: boolean
-}
-
-interface Enrollment {
-  id: string
-  name: string
-  total_count: number
-  used_count: number
-  status: string
-  classes: {
-    id: string
-    name: string
-  }
-}
+import { Schedule, Enrollment } from '@/components/student/bookings/types'
+import { EnrollmentSelect } from '@/components/student/bookings/enrollment-select'
+import { BookingCalendar } from '@/components/student/bookings/booking-calendar'
+import { DailyScheduleList } from '@/components/student/bookings/daily-schedule-list'
+import { BookingConfirmDialog } from '@/components/student/bookings/booking-confirm-dialog'
 
 export default function BookingsPage() {
   const { toast } = useToast()
@@ -180,20 +132,6 @@ export default function BookingsPage() {
     }
   }
 
-  // 현재 시간 (한국 시간 기준)
-  const now = new Date()
-  const currentDateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-  const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
-
-  // 수업이 지났는지 체크하는 함수
-  const isPastSchedule = (schedule: Schedule) => {
-    // 날짜가 오늘보다 이전이면 지남
-    if (schedule.date < currentDateStr) return true
-    // 오늘 날짜인데 종료 시간이 현재 시간보다 이전이면 지남
-    if (schedule.date === currentDateStr && schedule.end_time <= currentTime) return true
-    return false
-  }
-
   // 선택된 날짜의 수업 목록 (로컬 시간 기준으로 변환)
   const year = selectedDate.getFullYear()
   const month = String(selectedDate.getMonth() + 1).padStart(2, '0')
@@ -222,202 +160,31 @@ export default function BookingsPage() {
         </p>
       </div>
 
-      {/* 수강권 선택 */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">수강권 선택</label>
-            <Select value={selectedEnrollment} onValueChange={setSelectedEnrollment}>
-              <SelectTrigger>
-                <SelectValue placeholder="수강권을 선택하세요" />
-              </SelectTrigger>
-              <SelectContent>
-                {enrollments.map((enrollment) => (
-                  <SelectItem key={enrollment.id} value={enrollment.id}>
-                    {enrollment.classes.name} ({enrollment.total_count - enrollment.used_count}/
-                    {enrollment.total_count}회 남음)
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {selectedEnrollment && (
-              <p className="text-xs text-muted-foreground">
-                선택한 수강권으로 예약 가능한 수업만 표시됩니다
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <EnrollmentSelect
+        enrollments={enrollments}
+        selectedEnrollment={selectedEnrollment}
+        onSelect={setSelectedEnrollment}
+      />
 
-      {/* 캘린더 */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col items-center">
-            <div className="mb-4 flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  const newDate = new Date(selectedDate)
-                  newDate.setMonth(newDate.getMonth() - 1)
-                  setSelectedDate(newDate)
-                }}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-lg font-semibold">
-                {selectedDate.getFullYear()}년 {selectedDate.getMonth() + 1}월
-              </span>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  const newDate = new Date(selectedDate)
-                  newDate.setMonth(newDate.getMonth() + 1)
-                  setSelectedDate(newDate)
-                }}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
+      <BookingCalendar
+        selectedDate={selectedDate}
+        onSelectDate={setSelectedDate}
+        datesWithSchedules={datesWithSchedules}
+      />
 
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={(date) => date && setSelectedDate(date)}
-              modifiers={{
-                hasSchedule: datesWithSchedules,
-              }}
-              modifiersClassNames={{
-                hasSchedule: 'relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:bg-primary after:rounded-full',
-              }}
-              className="rounded-md border"
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <DailyScheduleList
+        selectedDate={selectedDate}
+        schedules={schedulesForSelectedDate}
+        selectedEnrollment={selectedEnrollment}
+        onBook={openBookingDialog}
+      />
 
-      {/* 선택된 날짜의 수업 목록 */}
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold">
-          {selectedDate.toLocaleDateString('ko-KR', {
-            month: 'long',
-            day: 'numeric',
-            weekday: 'long',
-          })}
-        </h2>
-
-        {schedulesForSelectedDate.length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center text-muted-foreground">
-              <p className="text-sm">이 날짜에는 예약 가능한 수업이 없습니다</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            {schedulesForSelectedDate.map((schedule) => {
-              const isPast = isPastSchedule(schedule)
-
-              return (
-                <Card
-                  key={schedule.id}
-                  className={`shadow-sm ${isPast ? 'opacity-60' : 'hover:shadow-md transition-all'}`}
-                >
-                  <CardContent className="p-5 space-y-4">
-                    {/* 수업명 */}
-                    <div className="flex items-start justify-between gap-3">
-                      <h3 className="font-semibold text-lg">{schedule.classes.name}</h3>
-                      <div
-                        className="w-3 h-3 rounded-full shrink-0 mt-1.5"
-                        style={{
-                          backgroundColor: schedule.classes.color || '#3b82f6',
-                        }}
-                      />
-                    </div>
-
-                    {/* 시간 & 정보 */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-base">
-                        <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className="font-medium">
-                          {schedule.start_time.slice(0, 5)} - {schedule.end_time.slice(0, 5)}
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          ({Math.round(
-                            (new Date(`2000-01-01T${schedule.end_time}`).getTime() -
-                              new Date(`2000-01-01T${schedule.start_time}`).getTime()) /
-                              60000
-                          )}분)
-                        </span>
-                      </div>
-                      {schedule.type === 'group' && schedule.max_students && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Users className="h-4 w-4 shrink-0" />
-                          <span>
-                            {schedule._count?.bookings || 0}/{schedule.max_students}명 예약
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* 버튼 */}
-                    {isPast ? (
-                      <div className="bg-surface-1 rounded-lg px-4 py-3 text-center text-sm text-muted-foreground">
-                        예약 마감
-                      </div>
-                    ) : schedule.isBooked ? (
-                      <div className="bg-blue-50 rounded-lg px-4 py-3 text-center text-sm text-blue-700 font-medium">
-                        예약완료
-                      </div>
-                    ) : (
-                      <Button
-                        onClick={() => openBookingDialog(schedule)}
-                        disabled={!selectedEnrollment}
-                        className="w-full h-11"
-                      >
-                        예약하기
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* 예약 확인 다이얼로그 */}
-      <AlertDialog open={bookingDialogOpen} onOpenChange={setBookingDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>수업을 예약하시겠습니까?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {selectedSchedule && (
-                <div className="space-y-2 mt-4">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{selectedSchedule.classes.name}</span>
-                  </div>
-                  <div className="text-sm">
-                    {new Date(selectedSchedule.date).toLocaleDateString('ko-KR', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      weekday: 'long',
-                    })}
-                  </div>
-                  <div className="text-sm">
-                    {selectedSchedule.start_time.slice(0, 5)} ~ {selectedSchedule.end_time.slice(0, 5)}
-                  </div>
-                </div>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>취소</AlertDialogCancel>
-            <AlertDialogAction onClick={handleBooking}>예약하기</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <BookingConfirmDialog
+        isOpen={bookingDialogOpen}
+        onOpenChange={setBookingDialogOpen}
+        schedule={selectedSchedule}
+        onConfirm={handleBooking}
+      />
     </div>
   )
 }
