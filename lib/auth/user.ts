@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers'
-import { verify } from 'jsonwebtoken'
+import { verifyToken } from '@/lib/auth/jwt'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import type { User } from '@/types/database'
 
@@ -18,7 +18,10 @@ export async function getCurrentUserFromServer() {
     }
 
     // JWT 토큰 검증
-    const decoded = verify(token, JWT_SECRET) as { userId: string; role: string }
+    const decoded = await verifyToken(token)
+    if (!decoded) {
+      return null
+    }
 
     // users 테이블에서 사용자 정보 가져오기
     const supabase = getSupabaseAdmin()

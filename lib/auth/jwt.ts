@@ -8,13 +8,14 @@ export interface JWTPayload {
   userId: string
   phone: string
   role: 'admin' | 'student'
+  studentId?: string | null
 }
 
 /**
  * JWT 토큰 생성 (Edge Runtime 호환)
  */
 export async function generateToken(payload: JWTPayload): Promise<string> {
-  const token = await new SignJWT(payload as any)
+  const token = await new SignJWT({ ...payload })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('7d')
@@ -33,6 +34,7 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
       userId: payload.userId as string,
       phone: payload.phone as string,
       role: payload.role as 'admin' | 'student',
+      studentId: payload.studentId as string | null,
     }
   } catch (error) {
     console.error('JWT 검증 실패:', error)
