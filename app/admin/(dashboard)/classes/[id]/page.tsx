@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ClassDetailHeader } from "@/components/admin/class-detail-header";
 import { ClassInfoCard } from "@/components/admin/class-info-card";
 import { ScheduleDateHeader } from "@/components/schedule-date-header";
-import { ScheduleCard } from "@/components/schedule-card";
+import { ScheduleCard } from '@/components/features/schedule/schedule-card'
 
 // 캐싱 비활성화
 export const dynamic = "force-dynamic";
