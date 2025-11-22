@@ -26,14 +26,20 @@ export async function middleware(request: NextRequest) {
     // 관리자 페이지는 인증 필요
     if (url.pathname.startsWith('/admin') || url.pathname === '/') {
       if (!user) {
-        // 로그인하지 않았으면 로그인 페이지로
-        return NextResponse.redirect(new URL('/admin/login', request.url))
+        // 로그인하지 않았으면 메인 도메인으로 리다이렉트
+        const mainUrl = new URL(request.url)
+        mainUrl.host = hostname.replace('admin.', '')
+        mainUrl.pathname = '/'
+        return NextResponse.redirect(mainUrl)
       }
 
       // 관리자 권한 확인
       if (user.role !== 'admin') {
-        // 관리자가 아니면 로그인 페이지로
-        const response = NextResponse.redirect(new URL('/admin/login', request.url))
+        // 관리자가 아니면 메인 도메인으로 리다이렉트
+        const mainUrl = new URL(request.url)
+        mainUrl.host = hostname.replace('admin.', '')
+        mainUrl.pathname = '/'
+        const response = NextResponse.redirect(mainUrl)
         response.cookies.delete('token')
         return response
       }
@@ -95,12 +101,12 @@ export async function middleware(request: NextRequest) {
 
     // 학생 페이지는 인증 필요
     if (!user) {
-      return NextResponse.redirect(new URL('/student/login', request.url))
+      return NextResponse.redirect(new URL('/', request.url))
     }
 
     // 학생 권한 확인
     if (user.role !== 'student') {
-      const response = NextResponse.redirect(new URL('/student/login', request.url))
+      const response = NextResponse.redirect(new URL('/', request.url))
       response.cookies.delete('token')
       return response
     }

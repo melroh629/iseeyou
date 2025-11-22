@@ -12,7 +12,22 @@ export class ApiError extends Error {
   }
 }
 
-export function handleApiError(error: unknown, context: string = 'API Error'): NextResponse {
+export async function handleApiError(
+  errorOrHandler: unknown | (() => Promise<NextResponse>),
+  context: string = 'API Error'
+): Promise<NextResponse> {
+  // 1. Wrapper로 사용된 경우 (함수가 전달됨)
+  if (typeof errorOrHandler === 'function') {
+    try {
+      return await errorOrHandler()
+    } catch (error) {
+      // 에러 발생 시 재귀적으로 handleApiError 호출 (에러 객체 전달)
+      return handleApiError(error, context)
+    }
+  }
+
+  // 2. Formatter로 사용된 경우 (에러 객체가 전달됨)
+  const error = errorOrHandler
   console.error(`${context}:`, error)
 
   if (error instanceof ApiError) {

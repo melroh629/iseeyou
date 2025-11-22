@@ -8,7 +8,6 @@ import {
   Users, 
   Ticket, 
   Settings,
-  LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoutButton } from "@/components/logout-button";
@@ -82,10 +81,7 @@ export function AdminSidebar() {
           <LogoutButton />
         </div>
         <div className="lg:hidden flex justify-center">
-           {/* Icon only logout for rail */}
-           <button className="text-muted-foreground hover:text-destructive">
-             <LogOut className="h-6 w-6" />
-           </button>
+           <LogoutButton iconOnly />
         </div>
       </div>
     </aside>

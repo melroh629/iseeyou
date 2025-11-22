@@ -72,9 +72,15 @@ export async function fetchWithRefresh(
       // 토큰 갱신 실패 시 로그인 페이지로 리다이렉트
       const currentPath = window.location.pathname
       if (currentPath.startsWith('/student')) {
-        window.location.href = '/student/login'
+        window.location.href = '/'
       } else if (currentPath.startsWith('/admin')) {
-        window.location.href = '/admin/login'
+        // 관리자 페이지에서 401 발생 시 메인 도메인으로 이동
+        if (window.location.hostname.startsWith('admin.')) {
+          const mainDomain = window.location.hostname.replace('admin.', '')
+          window.location.href = `${window.location.protocol}//${mainDomain}/`
+        } else {
+          window.location.href = '/'
+        }
       }
     }
   }
